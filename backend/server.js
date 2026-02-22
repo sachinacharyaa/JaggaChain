@@ -1,6 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const solana = require('./solana');
 
 const app = express();
 app.use(cors());
@@ -142,9 +144,20 @@ app.put('/api/whitelist/:id', async (req, res) => {
   try {
     const { status } = req.body;
     const request = await Whitelist.findByIdAndUpdate(req.params.id, { status }, { new: true });
-    
+
+    // Record approve/reject on Solana (memo)
+    const recordType = request.requestType === 'registration' ? 'REGISTRATION' : 'TRANSFER';
+    const txHash = await solana.recordApprovalRejection(recordType, request._id.toString(), status);
+
     if (status === 'approved' && request.requestType === 'registration') {
-      const tokenId = await Parcel.countDocuments() + 1;
+      const tokenId = (await Parcel.countDocuments()) + 1;
+      const regTxHash = await solana.recordRegistration({
+        tokenId,
+        ownerWallet: request.walletAddress,
+        ownerName: request.ownerName,
+        district: request.location?.district || '',
+        municipality: request.location?.municipality || ''
+      });
       const newParcel = new Parcel({
         tokenId,
         ownerName: request.ownerName,
@@ -152,12 +165,29 @@ app.put('/api/whitelist/:id', async (req, res) => {
         location: request.location,
         size: request.size,
         documentHash: 'Qm' + Date.now(),
-        transactionHash: 'TX' + Math.random().toString(36).substring(2, 50),
+        transactionHash: regTxHash,
         status: 'registered'
       });
       await newParcel.save();
     }
-    
+
+    if (status === 'approved' && request.requestType === 'transfer' && request.parcelId) {
+      const parcel = await Parcel.findById(request.parcelId);
+      if (parcel) {
+        const transferTxHash = await solana.recordTransfer({
+          parcelId: request.parcelId,
+          fromWallet: request.walletAddress,
+          toWallet: request.toWallet || '',
+          toName: request.toName || ''
+        });
+        parcel.ownerWallet = request.toWallet;
+        parcel.ownerName = request.toName;
+        parcel.transactionHash = transferTxHash;
+        parcel.updatedAt = new Date();
+        await parcel.save();
+      }
+    }
+
     res.json(request);
   } catch (err) {
     res.status(500).json({ error: err.message });
