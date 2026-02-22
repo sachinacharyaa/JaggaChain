@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+import { Transaction, LAMPORTS_PER_SOL } from '@solana/web3.js'
 import {
   Search,
   MapPin,
@@ -65,9 +66,11 @@ const JaggaChainLogo = ({ className = 'h-10 w-auto' }) => (
 )
 
 function App() {
-  const { publicKey, connected } = useWallet()
+  const { publicKey, connected, signTransaction } = useWallet()
   const walletAddress = publicKey?.toBase58() || null
   const isAdmin = useMemo(() => walletAddress && ADMIN_WALLETS.includes(walletAddress), [walletAddress])
+
+  const [feeConfig, setFeeConfig] = useState({ citizenFeeSol: 0, adminFeeSol: 0, treasuryWallet: '', solanaConfigured: true })
 
   const [activeTab, setActiveTab] = useState('landing')
   const [parcels, setParcels] = useState([])
@@ -94,10 +97,164 @@ function App() {
     toWallet: '',
     toName: '',
   })
+  const [notification, setNotification] = useState({ message: null, type: 'success' })
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type })
+    setTimeout(() => setNotification((n) => (n.message === message ? { message: null, type: 'success' } : n)), 5000)
+  }
 
   useEffect(() => {
     fetchStats()
+    fetch(`${API_BASE}/api/fee-config`)
+      .then((r) => r.json())
+      .then((d) => setFeeConfig({
+        citizenFeeSol: d.citizenFeeSol ?? 0.01,
+        adminFeeSol: d.adminFeeSol ?? 0.005,
+        treasuryWallet: d.treasuryWallet || '',
+        solanaConfigured: d.solanaConfigured !== false
+      }))
+      .catch(() => { })
   }, [])
+
+  /** Pay SOL fee via backend-built tx: no frontend RPC needed. User signs in wallet; backend submits. Returns signature as proof. */
+  const payFeeSol = async (amountSol) => {
+    if (!publicKey) throw new Error('Connect your wallet first.')
+    if (!signTransaction) throw new Error('Your wallet does not support signing. Try Phantom or Solflare.')
+    const toPubkey = feeConfig.treasuryWallet || publicKey.toBase58()
+    const lamports = Math.floor(amountSol * LAMPORTS_PER_SOL)
+    const buildRes = await fetch(`${API_BASE}/api/solana/build-fee-tx`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fromPubkey: publicKey.toBase58(),
+        toPubkey,
+        lamports
+      })
+    })
+    if (!buildRes.ok) {
+      const text = await buildRes.text()
+      let errMsg = 'Failed to build fee transaction'
+      try {
+        const data = JSON.parse(text)
+        if (data.error) errMsg = data.error
+      } catch (_) {
+        if (text) errMsg = text.slice(0, 200)
+      }
+      throw new Error(errMsg)
+    }
+    const { transaction: txBase64 } = await buildRes.json()
+    const buf = Uint8Array.from(atob(txBase64), c => c.charCodeAt(0))
+    const tx = Transaction.from(buf)
+    const signed = await signTransaction(tx)
+    const serialized = signed.serialize()
+    const bytes = new Uint8Array(serialized)
+    let binary = ''
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
+    const signedB64 = btoa(binary)
+    const submitRes = await fetch(`${API_BASE}/api/solana/submit-signed-tx`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ signedTransaction: signedB64 })
+    })
+    if (!submitRes.ok) {
+      const data = await submitRes.json().catch(() => ({}))
+      throw new Error(data.error || 'Failed to submit transaction')
+    }
+    const { signature } = await submitRes.json()
+    return signature
+  }
+
+  /** Pay registration fee and record details in one tx. Wallet will open to confirm — that's your Solana proof. */
+  const payRegistrationTx = async (lamports, payload) => {
+    if (!connected || !publicKey) throw new Error('Connect your wallet first.')
+    const toPubkey = feeConfig.treasuryWallet || publicKey.toBase58()
+
+    const buildRes = await fetch(`${API_BASE}/api/solana/build-registration-tx`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fromPubkey: publicKey.toBase58(),
+        toPubkey,
+        lamports,
+        payload
+      })
+    })
+    if (!buildRes.ok) {
+      const data = await buildRes.json().catch(() => ({}))
+      throw new Error(data.error || 'Failed to build registration tx')
+    }
+    const { transaction: txBase64 } = await buildRes.json()
+
+    // 2. Sign and submit
+    const buf = Uint8Array.from(atob(txBase64), c => c.charCodeAt(0))
+    const tx = Transaction.from(buf)
+    const signed = await signTransaction(tx)
+
+    const serialized = signed.serialize()
+    const bytes = new Uint8Array(serialized)
+    let binary = ''
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
+    const signedB64 = btoa(binary)
+
+    const submitRes = await fetch(`${API_BASE}/api/solana/submit-signed-tx`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ signedTransaction: signedB64 })
+    })
+    if (!submitRes.ok) {
+      const data = await submitRes.json().catch(() => ({}))
+      throw new Error(data.error || 'Failed to submit registration tx')
+    }
+    const { signature } = await submitRes.json()
+    return signature
+  }
+
+  const paymentErrorMessage = (err) => err?.message || 'Action failed. Ensure you have enough SOL and try again.'
+
+  /** Move NFT to treasury escrow. Wallet will open to confirm. */
+  const payNftTransfer = async (mintAddress) => {
+    if (!connected || !publicKey) throw new Error('Connect your wallet first.')
+    const toPubkey = feeConfig.treasuryWallet || publicKey.toBase58()
+
+    const buildRes = await fetch(`${API_BASE}/api/solana/build-nft-transfer-tx`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mintAddress,
+        fromPubkey: publicKey.toBase58(),
+        toPubkey
+      })
+    })
+    if (!buildRes.ok) {
+      const data = await buildRes.json().catch(() => ({}))
+      throw new Error(data.error || 'Failed to build NFT transfer')
+    }
+    const { transaction: txBase64 } = await buildRes.json()
+
+    // 2. Sign and submit
+    const buf = Uint8Array.from(atob(txBase64), c => c.charCodeAt(0))
+    const tx = Transaction.from(buf)
+    const signed = await signTransaction(tx)
+
+    const serialized = signed.serialize()
+    const bytes = new Uint8Array(serialized)
+    let binary = ''
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
+    const signedB64 = btoa(binary)
+
+    const submitRes = await fetch(`${API_BASE}/api/solana/submit-signed-tx`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ signedTransaction: signedB64 })
+    })
+    if (!submitRes.ok) {
+      const data = await submitRes.json().catch(() => ({}))
+      throw new Error(data.error || 'Failed to submit NFT transfer')
+    }
+    const { signature } = await submitRes.json()
+    return signature
+  }
 
   useEffect(() => {
     if (connected && walletAddress) {
@@ -169,18 +326,24 @@ function App() {
   const handleWhitelistAction = async (id, status) => {
     setTxLoading(id)
     try {
+      const paymentTxSignature = await payFeeSol(feeConfig.adminFeeSol)
       const res = await fetch(`${API_BASE}/api/whitelist/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, paymentTxSignature }),
       })
       if (res.ok) {
         await fetchWhitelist()
         await fetchStats()
         if (walletAddress && !isAdmin) fetchParcelsByOwner(walletAddress)
+        showNotification(status === 'approved' ? 'Request approved. Recorded on Solana.' : 'Request rejected. Recorded on Solana.', 'success')
+      } else {
+        const data = await res.json().catch(() => ({}))
+        showNotification(data.error || 'Action failed', 'error')
       }
     } catch (err) {
       console.error('Failed to update whitelist:', err)
+      showNotification(paymentErrorMessage(err), 'error')
     }
     setTxLoading(null)
   }
@@ -190,6 +353,16 @@ function App() {
     if (!walletAddress) return
     setTxLoading('registering')
     try {
+      const payload = {
+        ownerName: registerForm.ownerName,
+        district: registerForm.district,
+        municipality: registerForm.municipality,
+        ward: registerForm.ward,
+        tole: registerForm.tole,
+      }
+
+      const paymentTxSignature = await payRegistrationTx(feeConfig.citizenFeeSol * LAMPORTS_PER_SOL, payload)
+
       await fetch(`${API_BASE}/api/whitelist`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -208,40 +381,63 @@ function App() {
             kattha: registerForm.kattha,
             dhur: registerForm.dhur,
           },
+          paymentTxSignature,
         }),
       })
       await fetchWhitelist()
       setShowRegisterModal(false)
       setRegisterForm({ ownerName: '', district: '', municipality: '', ward: '', tole: '', bigha: '', kattha: '', dhur: '' })
+      showNotification('Registration submitted. Pending government approval. You will see it in My requests and in Active once approved.', 'success')
     } catch (err) {
       console.error('Failed to submit registration:', err)
+      showNotification(paymentErrorMessage(err), 'error')
     }
     setTxLoading(null)
   }
-
   const handleTransfer = async (e) => {
     e.preventDefault()
     if (!walletAddress) return
     setTxLoading('transferring')
     try {
+      const parcel = myParcels.find(p => p._id === transferForm.parcelId)
+      if (!parcel) throw new Error('Parcel not found')
+
+      // 1. Pay SOL fee
+      const paymentTxSignature = await payFeeSol(feeConfig.citizenFeeSol)
+
+      // 2. Move NFT to Escrow (if it has a mintAddress)
+      let nftTransferSignature = null
+      if (parcel.mintAddress && parcel.mintAddress !== 'undefined' && feeConfig.solanaConfigured) {
+        try {
+          nftTransferSignature = await payNftTransfer(parcel.mintAddress)
+        } catch (err) {
+          console.warn('NFT transfer to escrow failed, skipping real movement (may be dev mode):', err.message)
+        }
+      }
+
+      // 3. Submit request
       await fetch(`${API_BASE}/api/whitelist`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           walletAddress,
-          ownerName: (myParcels.find(p => p._id === transferForm.parcelId)?.ownerName) || '',
+          ownerName: parcel.ownerName || '',
           requestType: 'transfer',
           toWallet: transferForm.toWallet,
           toName: transferForm.toName,
           parcelId: transferForm.parcelId,
+          paymentTxSignature,
+          nftTransferSignature
         }),
       })
       await fetchWhitelist()
       setShowTransferModal(false)
       setTransferForm({ parcelId: '', toWallet: '', toName: '' })
       fetchParcelsByOwner(walletAddress)
+      showNotification('Transfer request submitted. Pending government approval.', 'success')
     } catch (err) {
       console.error('Failed to submit transfer:', err)
+      showNotification(paymentErrorMessage(err), 'error')
     }
     setTxLoading(null)
   }
@@ -455,6 +651,24 @@ function App() {
 
   return (
     <div className="min-h-screen bg-page-nepal">
+      {notification.message && (
+        <div
+          className={`fixed top-4 left-1/2 -translate-x-1/2 z-[100] max-w-md w-full mx-4 px-4 py-3 rounded-xl shadow-lg flex items-center justify-between gap-4 animate-fadeIn ${
+            notification.type === 'error' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'
+          }`}
+          role="alert"
+        >
+          <span className="text-sm font-medium">{notification.message}</span>
+          <button
+            type="button"
+            onClick={() => setNotification({ message: null, type: 'success' })}
+            className="shrink-0 p-1 rounded-lg hover:bg-white/20 transition"
+            aria-label="Dismiss"
+          >
+            <XCircle className="w-5 h-5" />
+          </button>
+        </div>
+      )}
       {activeTab === 'landing' && <Landing />}
 
       {activeTab !== 'landing' && (
@@ -633,13 +847,6 @@ function App() {
                           >
                             <FileCheck className="w-4 h-4" /> Register land
                           </button>
-                          <button
-                            onClick={() => setShowTransferModal(true)}
-                            disabled={myParcels.length === 0}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <Zap className="w-4 h-4" /> Transfer
-                          </button>
                         </div>
                       </div>
                     </div>
@@ -649,23 +856,81 @@ function App() {
                         <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
                           <FileCheck className="w-5 h-5" /> My requests
                         </h3>
-                        <div className="space-y-3">
+                        <p className="text-sm text-slate-500 mb-4">Click a request to see details.</p>
+                        <div className="space-y-2">
                           {myRequests.map((r) => (
                             <div
                               key={r._id}
-                              className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-slate-50/50"
+                              className="rounded-xl border border-slate-200 overflow-hidden"
                             >
-                              <div>
-                                <span className="font-medium text-slate-800">{r.requestType === 'registration' ? 'Registration' : 'Transfer'}</span>
-                                <span
-                                  className={`ml-2 px-2 py-0.5 rounded text-xs font-medium ${
-                                    r.status === 'pending' ? 'bg-amber-100 text-amber-800' : r.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
-                                  }`}
-                                >
-                                  {r.status}
-                                </span>
+                              <div
+                                className="flex items-center justify-between p-4 bg-slate-50/50 hover:bg-slate-100/50 transition cursor-pointer"
+                                onClick={() => setExpandedRequestId(expandedRequestId === r._id ? null : r._id)}
+                              >
+                                <div className="flex items-center gap-3">
+                                  {expandedRequestId === r._id ? (
+                                    <ChevronDown className="w-5 h-5 text-slate-400 shrink-0" />
+                                  ) : (
+                                    <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />
+                                  )}
+                                  <div>
+                                    <span className="font-medium text-slate-800">{r.requestType === 'registration' ? 'Registration' : 'Transfer'}</span>
+                                    <span
+                                      className={`ml-2 px-2 py-0.5 rounded text-xs font-medium ${r.status === 'pending' ? 'bg-amber-100 text-amber-800' : r.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}
+                                    >
+                                      {r.status}
+                                    </span>
+                                  </div>
+                                </div>
+                                <span className="text-sm text-slate-500">{new Date(r.createdAt).toLocaleDateString()}</span>
                               </div>
-                              <span className="text-sm text-slate-500">{new Date(r.createdAt).toLocaleDateString()}</span>
+                              {expandedRequestId === r._id && (
+                                <div className="px-4 pb-4 pt-2 border-t border-slate-100 bg-white">
+                                  <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 text-sm space-y-3">
+                                    {r.requestType === 'registration' ? (
+                                      <>
+                                        <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                                          <div><span className="text-slate-500">Owner name</span><br /><span className="font-medium text-slate-800">{r.ownerName}</span></div>
+                                          <div><span className="text-slate-500">Wallet</span><br /><span className="font-mono text-slate-800 break-all">{r.walletAddress}</span></div>
+                                          <div><span className="text-slate-500">District</span><br /><span className="text-slate-800">{r.location?.district || '—'}</span></div>
+                                          <div><span className="text-slate-500">Municipality</span><br /><span className="text-slate-800">{r.location?.municipality || '—'}</span></div>
+                                          <div><span className="text-slate-500">Ward</span><br /><span className="text-slate-800">{r.location?.ward ?? '—'}</span></div>
+                                          <div><span className="text-slate-500">Tole</span><br /><span className="text-slate-800">{r.location?.tole || '—'}</span></div>
+                                          <div><span className="text-slate-500">Size</span><br /><span className="text-slate-800">{formatSize(r.size)}</span></div>
+                                          <div><span className="text-slate-500">Submitted</span><br /><span className="text-slate-800">{new Date(r.createdAt).toLocaleString()}</span></div>
+                                        </div>
+                                        {r.paymentTxSignature && !r.paymentTxSignature.startsWith('dev-') && (
+                                          <div>
+                                            <span className="text-slate-500">Payment (proof)</span><br />
+                                            <a href={`https://explorer.solana.com/tx/${r.paymentTxSignature}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="font-mono text-blue-600 hover:underline inline-flex items-center gap-1">
+                                              {truncateHash(r.paymentTxSignature)} <ExternalLink className="w-3.5 h-3.5" />
+                                            </a>
+                                          </div>
+                                        )}
+                                      </>
+                                    ) : (
+                                      <>
+                                        <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                                          <div><span className="text-slate-500">From (you)</span><br /><span className="font-medium text-slate-800">{r.ownerName}</span></div>
+                                          <div><span className="text-slate-500">Your wallet</span><br /><span className="font-mono text-slate-800 break-all">{r.walletAddress}</span></div>
+                                          <div><span className="text-slate-500">To (recipient)</span><br /><span className="text-slate-800">{r.toName}</span></div>
+                                          <div><span className="text-slate-500">Recipient wallet</span><br /><span className="font-mono text-slate-800 break-all">{r.toWallet}</span></div>
+                                          <div><span className="text-slate-500">Parcel ID</span><br /><span className="font-mono text-slate-800">{r.parcelId || '—'}</span></div>
+                                          <div><span className="text-slate-500">Submitted</span><br /><span className="text-slate-800">{new Date(r.createdAt).toLocaleString()}</span></div>
+                                        </div>
+                                        {r.paymentTxSignature && !r.paymentTxSignature.startsWith('dev-') && (
+                                          <div>
+                                            <span className="text-slate-500">Payment (proof)</span><br />
+                                            <a href={`https://explorer.solana.com/tx/${r.paymentTxSignature}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="font-mono text-blue-600 hover:underline inline-flex items-center gap-1">
+                                              {truncateHash(r.paymentTxSignature)} <ExternalLink className="w-3.5 h-3.5" />
+                                            </a>
+                                          </div>
+                                        )}
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -788,7 +1053,7 @@ function App() {
                     <h2 className="text-lg font-semibold text-white flex items-center gap-2">
                       <FileCheck className="w-5 h-5" /> Registration requests
                     </h2>
-                    <p className="text-blue-200 text-sm">Review and approve or reject. Each action is recorded on Solana.</p>
+                    <p className="text-blue-200 text-sm">Review and approve or reject. When you click Approve/Reject, your wallet will open — confirm the transaction to record the decision on Solana. {feeConfig.adminFeeSol > 0 ? `Fee: ${feeConfig.adminFeeSol} SOL.` : 'Network fee only.'}</p>
                   </div>
                   {registrationRequests.length === 0 ? (
                     <div className="p-8 text-center text-slate-500">No pending registration requests.</div>
@@ -872,7 +1137,7 @@ function App() {
                     <h2 className="text-lg font-semibold text-white flex items-center gap-2">
                       <Zap className="w-5 h-5" /> Transfer requests
                     </h2>
-                    <p className="text-red-200 text-sm">Approve or reject; each decision is recorded on Solana.</p>
+                    <p className="text-red-200 text-sm">When you Approve or Reject, your wallet will open to confirm — that records the decision on Solana. {feeConfig.adminFeeSol > 0 ? `Fee: ${feeConfig.adminFeeSol} SOL.` : 'Network fee only.'}</p>
                   </div>
                   {transferRequests.length === 0 ? (
                     <div className="p-8 text-center text-slate-500">No pending transfer requests.</div>
@@ -939,6 +1204,22 @@ function App() {
                                   <div><span className="text-slate-500">To wallet</span><br /><span className="font-mono text-slate-800 break-all">{item.toWallet}</span></div>
                                   <div><span className="text-slate-500">Parcel ID</span><br /><span className="font-mono text-slate-800">{item.parcelId}</span></div>
                                   <div><span className="text-slate-500">Submitted</span><br /><span className="text-slate-800">{new Date(item.createdAt).toLocaleString()}</span></div>
+                                  {item.paymentTxSignature && (
+                                    <div className="col-span-2">
+                                      <span className="text-slate-500">SOL Fee Signature (Proof)</span><br />
+                                      <a href={`https://explorer.solana.com/tx/${item.paymentTxSignature}?cluster=devnet`} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-mono text-xs break-all flex items-center gap-1">
+                                        <ExternalLink className="w-3 h-3" /> {item.paymentTxSignature}
+                                      </a>
+                                    </div>
+                                  )}
+                                  {item.nftTransferSignature && (
+                                    <div className="col-span-2">
+                                      <span className="text-slate-500">NFT Escrow Signature (Proof)</span><br />
+                                      <a href={`https://explorer.solana.com/tx/${item.nftTransferSignature}?cluster=devnet`} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-mono text-xs break-all flex items-center gap-1">
+                                        <ExternalLink className="w-3 h-3" /> {item.nftTransferSignature}
+                                      </a>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -966,6 +1247,19 @@ function App() {
             <h2 className="text-xl font-semibold text-slate-800 mb-4 flex items-center gap-2">
               <FileCheck className="w-5 h-5 text-red-600" /> Register new land
             </h2>
+            <p className="text-sm text-slate-500 mb-4">
+              {feeConfig.citizenFeeSol > 0 ? `${feeConfig.citizenFeeSol} SOL (proof)` : 'Network fee only (no protocol fee)'}{!feeConfig.treasuryWallet && feeConfig.citizenFeeSol > 0 && ' — dev: paying to your wallet'}
+            </p>
+            {!feeConfig.solanaConfigured && (
+              <div className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+                Backend Solana RPC is not configured. Set <strong>SOLANA_RPC_URL</strong> in <strong>backend/.env</strong> and restart the backend so fee payment works.
+              </div>
+            )}
+            {feeConfig.solanaConfigured && (
+              <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
+                When you submit, <strong>your wallet (e.g. Phantom) will open</strong>. Confirm the transaction there — that is your Solana proof. After government approval, a parcel NFT will be minted to your wallet.
+              </div>
+            )}
             <form onSubmit={handleRegistration} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Owner name</label>
@@ -1095,6 +1389,19 @@ function App() {
             <h2 className="text-xl font-semibold text-slate-800 mb-4 flex items-center gap-2">
               <Zap className="w-5 h-5 text-red-600" /> Transfer parcel
             </h2>
+            <p className="text-sm text-slate-500 mb-4">
+              {feeConfig.citizenFeeSol > 0 ? `${feeConfig.citizenFeeSol} SOL (proof)` : 'Network fee only (no protocol fee)'}{!feeConfig.treasuryWallet && feeConfig.citizenFeeSol > 0 && ' — dev: paying to your wallet'}
+            </p>
+            {!feeConfig.solanaConfigured && (
+              <div className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+                Backend Solana RPC is not configured. Set <strong>SOLANA_RPC_URL</strong> in <strong>backend/.env</strong> and restart the backend.
+              </div>
+            )}
+            {feeConfig.solanaConfigured && (
+              <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
+                When you submit, <strong>your wallet will open</strong>. Confirm the transaction — that records your transfer request on Solana.
+              </div>
+            )}
             <form onSubmit={handleTransfer} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Recipient name</label>

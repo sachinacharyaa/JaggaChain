@@ -8,6 +8,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Fee config: citizen pays when registering/transfer request; admin pays when approving/rejecting (proof on-chain)
+const FEE_CITIZEN_SOL = parseFloat(process.env.FEE_CITIZEN_SOL || '0');
+const FEE_ADMIN_SOL = parseFloat(process.env.FEE_ADMIN_SOL || '0');
+const TREASURY_WALLET = process.env.TREASURY_WALLET || '';
+
 const MONGO_URI = 'mongodb+srv://sachinacharya365official_db_user:kEX4fEHa1FNjVyWt@cluster0.k8tooiv.mongodb.net/onChain-Jagga';
 
 mongoose.connect(MONGO_URI)
@@ -32,6 +37,7 @@ const parcelSchema = new mongoose.Schema({
   },
   documentHash: String,
   transactionHash: String,
+  mintAddress: String,
   status: { type: String, default: 'registered' },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
@@ -56,6 +62,9 @@ const whitelistSchema = new mongoose.Schema({
   toWallet: String,
   toName: String,
   parcelId: String,
+  paymentTxSignature: String,      // citizen SOL fee tx (proof of payment)
+  adminPaymentTxSignature: String, // admin SOL fee tx when approve/reject
+  nftTransferSignature: String,    // real NFT transfer to escrow tx
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -111,6 +120,78 @@ app.get('/api/parcels/owner/:wallet', async (req, res) => {
   }
 });
 
+app.get('/api/fee-config', (req, res) => {
+  res.json({
+    citizenFeeSol: FEE_CITIZEN_SOL,
+    adminFeeSol: FEE_ADMIN_SOL,
+    treasuryWallet: TREASURY_WALLET,
+    solanaConfigured: solana.isConfigured
+  });
+});
+
+// Fee tx via backend so frontend does not need Solana RPC (avoids "network unreachable" in browser)
+app.post('/api/solana/build-registration-tx', async (req, res) => {
+  try {
+    const { fromPubkey, toPubkey, lamports, payload } = req.body;
+    if (!fromPubkey || !toPubkey || lamports == null || !payload) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+    const transaction = await solana.buildRegistrationTx(fromPubkey, toPubkey, lamports, payload);
+    res.json({ transaction });
+  } catch (err) {
+    if (err.message && err.message.includes('not configured')) {
+      return res.status(503).json({ error: 'Solana RPC not configured. Set SOLANA_RPC_URL in backend .env' });
+    }
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/solana/build-fee-tx', async (req, res) => {
+  try {
+    const { fromPubkey, toPubkey, lamports } = req.body;
+    if (!fromPubkey || !toPubkey || lamports == null) {
+      return res.status(400).json({ error: 'Missing fromPubkey, toPubkey, or lamports' });
+    }
+    const transaction = await solana.buildFeeTransferTx(fromPubkey, toPubkey, lamports);
+    res.json({ transaction });
+  } catch (err) {
+    if (err.message && err.message.includes('not configured')) {
+      return res.status(503).json({ error: 'Solana RPC not configured. Set SOLANA_RPC_URL in backend .env' });
+    }
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/solana/build-nft-transfer-tx', async (req, res) => {
+  try {
+    const { mintAddress, fromPubkey, toPubkey } = req.body;
+    if (!mintAddress || !fromPubkey || !toPubkey) {
+      return res.status(400).json({ error: 'Missing mintAddress, fromPubkey, or toPubkey' });
+    }
+    const transaction = await solana.buildNFTTransferTx(mintAddress, fromPubkey, toPubkey);
+    res.json({ transaction });
+  } catch (err) {
+    if (err.message && err.message.includes('not configured')) {
+      return res.status(503).json({ error: 'Solana RPC not configured. Set SOLANA_RPC_URL in backend .env' });
+    }
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/solana/submit-signed-tx', async (req, res) => {
+  try {
+    const { signedTransaction } = req.body;
+    if (!signedTransaction) return res.status(400).json({ error: 'Missing signedTransaction (base64)' });
+    const signature = await solana.submitSignedTx(signedTransaction);
+    res.json({ signature });
+  } catch (err) {
+    if (err.message && err.message.includes('not configured')) {
+      return res.status(503).json({ error: 'Solana RPC not configured' });
+    }
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/whitelist', async (req, res) => {
   try {
     const requests = await Whitelist.find().sort({ createdAt: -1 });
@@ -122,16 +203,21 @@ app.get('/api/whitelist', async (req, res) => {
 
 app.post('/api/whitelist', async (req, res) => {
   try {
-    const { walletAddress, ownerName, requestType, location, size, toWallet, toName, parcelId } = req.body;
-    const request = new Whitelist({ 
-      walletAddress, 
+    const { walletAddress, ownerName, requestType, location, size, toWallet, toName, parcelId, paymentTxSignature, nftTransferSignature } = req.body;
+    if (!paymentTxSignature) {
+      return res.status(400).json({ error: 'Payment required. Send SOL fee first and include paymentTxSignature.' });
+    }
+    const request = new Whitelist({
+      walletAddress,
       ownerName,
       requestType: requestType || 'whitelist',
       location,
       size,
       toWallet,
       toName,
-      parcelId
+      parcelId,
+      paymentTxSignature,
+      nftTransferSignature // Real NFT transfer to escrow (optional if dev-mode)
     });
     await request.save();
     res.json(request);
@@ -142,8 +228,15 @@ app.post('/api/whitelist', async (req, res) => {
 
 app.put('/api/whitelist/:id', async (req, res) => {
   try {
-    const { status } = req.body;
-    const request = await Whitelist.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    const { status, paymentTxSignature } = req.body;
+    if (!paymentTxSignature) {
+      return res.status(400).json({ error: 'Admin payment required. Send SOL fee first and include paymentTxSignature.' });
+    }
+    const request = await Whitelist.findByIdAndUpdate(
+      req.params.id,
+      { status, adminPaymentTxSignature: paymentTxSignature },
+      { new: true }
+    );
 
     // Record approve/reject on Solana (memo)
     const recordType = request.requestType === 'registration' ? 'REGISTRATION' : 'TRANSFER';
@@ -151,6 +244,13 @@ app.put('/api/whitelist/:id', async (req, res) => {
 
     if (status === 'approved' && request.requestType === 'registration') {
       const tokenId = (await Parcel.countDocuments()) + 1;
+      const { mintAddress: mintAddr, signature: mintSig } = await solana.mintParcelNFT(
+        request.walletAddress,
+        tokenId,
+        request.ownerName,
+        request.location?.district || '',
+        request.location?.municipality || ''
+      );
       const regTxHash = await solana.recordRegistration({
         tokenId,
         ownerWallet: request.walletAddress,
@@ -165,7 +265,8 @@ app.put('/api/whitelist/:id', async (req, res) => {
         location: request.location,
         size: request.size,
         documentHash: 'Qm' + Date.now(),
-        transactionHash: regTxHash,
+        transactionHash: mintSig || regTxHash,
+        mintAddress: mintAddr || undefined,
         status: 'registered'
       });
       await newParcel.save();
@@ -173,7 +274,20 @@ app.put('/api/whitelist/:id', async (req, res) => {
 
     if (status === 'approved' && request.requestType === 'transfer' && request.parcelId) {
       const parcel = await Parcel.findById(request.parcelId);
-      if (parcel) {
+      if (parcel && parcel.mintAddress && solana.isConfigured) {
+        // Real SPL Transfer from Treasury to Buyer
+        const transferTxHash = await solana.transferParcelNFT(
+          parcel.mintAddress,
+          TREASURY_WALLET || (await solana.getProtocolPublicKey()), // From treasury
+          request.toWallet
+        );
+        parcel.ownerWallet = request.toWallet;
+        parcel.ownerName = request.toName;
+        parcel.transactionHash = transferTxHash;
+        parcel.updatedAt = new Date();
+        await parcel.save();
+      } else if (parcel) {
+        // Dev mode / Fallback
         const transferTxHash = await solana.recordTransfer({
           parcelId: request.parcelId,
           fromWallet: request.walletAddress,
@@ -185,6 +299,18 @@ app.put('/api/whitelist/:id', async (req, res) => {
         parcel.transactionHash = transferTxHash;
         parcel.updatedAt = new Date();
         await parcel.save();
+      }
+    }
+
+    if (status === 'rejected' && request.requestType === 'transfer' && request.parcelId) {
+      // Refund NFT to Seller
+      const parcel = await Parcel.findById(request.parcelId);
+      if (parcel && parcel.mintAddress && solana.isConfigured) {
+        await solana.transferParcelNFT(
+          parcel.mintAddress,
+          TREASURY_WALLET || (await solana.getProtocolPublicKey()),
+          request.walletAddress
+        );
       }
     }
 
@@ -202,6 +328,31 @@ app.get('/api/stats', async (req, res) => {
     const pendingTransfers = await Whitelist.countDocuments({ status: 'pending', requestType: 'transfer' });
     const approvedWhitelist = await Whitelist.countDocuments({ status: 'approved' });
     res.json({ totalParcels, pendingWhitelist, pendingRegistrations, pendingTransfers, approvedWhitelist });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Remove only parcels #1 and #5 of Sachin Acharya (and related whitelist entries)
+app.post('/api/admin/cleanup-dummy', async (req, res) => {
+  try {
+    const parcelCondition = {
+      ownerName: /sachin acharya/i,
+      tokenId: { $in: [1, 5] }
+    };
+    const parcelsToRemove = await Parcel.find(parcelCondition).select('_id');
+    const parcelIds = parcelsToRemove.map((p) => p._id.toString());
+
+    const parcelResult = await Parcel.deleteMany(parcelCondition);
+    const whitelistResult = await Whitelist.deleteMany({
+      parcelId: { $in: parcelIds }
+    });
+
+    res.json({
+      ok: true,
+      parcelsDeleted: parcelResult.deletedCount,
+      whitelistDeleted: whitelistResult.deletedCount
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

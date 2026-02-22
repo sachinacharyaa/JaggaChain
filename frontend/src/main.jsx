@@ -9,7 +9,8 @@ import '@solana/wallet-adapter-react-ui/styles.css'
 import './index.css'
 import App from './App.jsx'
 
-const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC || 'https://api.devnet.solana.org'
+// Use a public RPC that works from browser (CORS). Override with VITE_SOLANA_RPC in .env
+const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC || 'https://rpc.ankr.com/solana_devnet'
 
 function WalletWrapper() {
   const wallets = useMemo(
