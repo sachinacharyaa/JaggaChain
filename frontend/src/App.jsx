@@ -41,15 +41,11 @@ const NepalFlag = () => (
   </svg>
 )
 
-/** Official Emblem of Nepal – used as app logo */
-const EMBLEM_LOGO_URL = 'https://giwmscdntwo.gov.np/static/assets/image/Emblem_of_Nepal.png'
-const JaggaChainLogo = ({ className = 'h-12 w-12' }) => (
+const JaggaChainLogo = ({ className = 'h-[64px] w-auto' }) => (
   <img
-    src={EMBLEM_LOGO_URL}
-    alt="Emblem of Nepal"
-    className={className}
-    width={48}
-    height={48}
+    src="/logo.png"
+    alt="JaggaChain Logo"
+    className={`${className} object-contain transition-transform duration-300`}
   />
 )
 
@@ -449,155 +445,225 @@ function App() {
   const myParcels = parcels
 
   const Landing = () => (
-    <div className="min-h-screen bg-page-nepal">
-      {/* Topnotch navbar – minimal, light, pill buttons */}
-      <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-[var(--nav-bg)] backdrop-blur-md" style={{ boxShadow: '0 1px 0 rgba(0,0,0,0.04)' }}>
+    <div className="min-h-screen">
+      {/* Top Navigation */}
+      <header className="sticky top-0 z-50 w-full border-b border-primary/10 bg-white/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <button onClick={() => setActiveTab('landing')} className="flex items-center gap-3 hover:opacity-80 transition">
-              <JaggaChainLogo className="h-12 w-12 shrink-0" />
-              <span className="text-xl font-bold tracking-tight text-[var(--text-primary)] font-display">JaggaChain</span>
+          <div className="flex h-16 items-center justify-between">
+            <button onClick={() => setActiveTab('landing')} className="flex items-center group cursor-pointer">
+              <JaggaChainLogo />
             </button>
             <nav className="hidden md:flex items-center gap-8">
-              <button onClick={() => setActiveTab('explorer')} className="text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] transition">
-                Explorer
-              </button>
-              <a href="#problem" className="text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] transition">About</a>
-              <a href="#solution" className="text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] transition">Features</a>
+              <button onClick={() => setActiveTab('explorer')} className="text-sm font-semibold hover:text-primary transition-colors">Explorer</button>
+              <a className="text-sm font-semibold hover:text-primary transition-colors" href="#pillars">Technology</a>
+              <a className="text-sm font-semibold hover:text-primary transition-colors" href="#how-it-works">How it Works</a>
             </nav>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setActiveTab('explorer')}
-                className="nav-pill nav-pill-secondary hidden sm:inline-flex items-center gap-2"
-              >
-                <Globe className="w-4 h-4" /> Public records
-              </button>
-              <WalletMultiButton className="nav-pill nav-pill-primary !bg-[var(--nepal-blue-dark)] !text-white !rounded-full !px-5 !py-2.5 !text-sm !font-semibold hover:!bg-[var(--nepal-blue)]" />
+            <div className="flex items-center gap-4">
+              <WalletMultiButton className="!bg-primary !text-white !px-5 !py-2 !rounded-lg !text-sm !font-bold hover:!bg-primary/90 !transition-all !shadow-lg !shadow-primary/20" />
             </div>
           </div>
         </div>
       </header>
 
-      {/* Hero – left: headline + CTA; right: Nepal + land + solution visual */}
-      <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-hero-nepal">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-16 lg:py-24">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            <div className="animate-fadeInUp">
-              <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] font-bold text-[var(--text-primary)] leading-[1.15] tracking-tight mb-6">
-                Register your land
-                <br />
-                <span className="gradient-text">on blockchain.</span>
-              </h1>
-              <p className="text-lg text-[var(--text-secondary)] max-w-lg mb-10 leading-relaxed">
-                With JaggaChain, every title is an NFT on Solana—tamper-proof, transparent, and viewable on-chain. Government of Nepal.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <WalletMultiButton className="!rounded-full !px-8 !py-3.5 !text-base !font-semibold !bg-[var(--nepal-blue-dark)] !text-white hover:!bg-[var(--nepal-blue)] !shadow-[var(--shadow-card)] !inline-flex !items-center !justify-center !gap-2 w-full sm:w-auto [&>.wallet-adapter-button-start-icon]:!w-5 [&>.wallet-adapter-button-start-icon]:!h-5" />
-                <button
-                  onClick={() => setActiveTab('explorer')}
-                  className="nav-pill nav-pill-secondary inline-flex items-center justify-center gap-2 w-full sm:w-auto"
-                >
-                  <Globe className="w-4 h-4" /> Browse public records
-                </button>
-              </div>
-            </div>
-            <div className="hidden lg:flex justify-center items-center animate-fadeInUp animate-delay-200">
-              <img
-                src="/nepal-map.png"
-                alt="Nepal – national map with flag colours and symbols"
-                className="w-full max-w-md h-auto object-contain drop-shadow-lg"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="problem" className="py-20 lg:py-28 bg-section-nepal border-t border-slate-200/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl lg:text-4xl font-display font-bold text-center text-[var(--text-primary)] mb-3">The Problem</h2>
-          <p className="text-center text-[var(--text-secondary)] mb-14 max-w-2xl mx-auto text-lg">
-            Traditional land records in Nepal are paper-based and fragmented, leading to disputes and delays.
-          </p>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: FileWarning,
-                title: 'Fraud & forgery',
-                desc: 'Paper records can be altered or duplicated, enabling fraudulent sales and ownership disputes.',
-                img: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400&h=260&fit=crop',
-              },
-              {
-                icon: Zap,
-                title: 'Time consuming',
-                desc: 'Verification takes weeks with multiple office visits and stacks of paperwork.',
-                img: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=400&h=260&fit=crop',
-              },
-              {
-                icon: Lock,
-                title: 'Lack of transparency',
-                desc: 'Citizens cannot easily verify ownership or history, creating information asymmetry.',
-                img: 'https://images.unsplash.com/photo-1560518883-ce09059e617c?w=400&h=260&fit=crop',
-              },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden card-hover animate-fadeIn shadow-[var(--shadow-card)]"
-                style={{ animationDelay: `${i * 0.1}s` }}
-              >
-                <div className="h-44 overflow-hidden">
-                  <img src={item.img} alt="" className="w-full h-full object-cover" />
+      <main>
+        {/* Hero Section */}
+        <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-hero-nepal">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-16 lg:py-24">
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
+              <div className="space-y-8 animate-fadeInUp max-w-[560px]">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/70 border border-[#cccccc] text-[#444] text-[13px] font-medium tracking-wide shadow-sm">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary"></span>
+                  National land trust layer on Solana
                 </div>
-                <div className="p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="p-2.5 bg-slate-100 rounded-xl">
-                      <item.icon className="w-5 h-5 text-[var(--nepal-blue)]" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-[var(--text-primary)]">{item.title}</h3>
+                <h1 className="font-display font-black text-[32px] sm:text-[40px] lg:text-[52px] leading-[1.15] text-[#1a1a2e]">
+                  From paper disputes to{' '}
+                  <span className="text-[#c0392b]">verifiable ownership</span>{' '}
+                  in real time.
+                </h1>
+                <p className="subtitle text-[15px] text-[#555] leading-[1.7] max-w-[420px]">
+                  Each registration, transfer request, approval, and rejection gets a Solana trail with explorer links.
+                </p>
+                <div className="buttons flex flex-wrap gap-3 items-center">
+                  <button
+                    onClick={() => setActiveTab('explorer')}
+                    className="btn-primary flex items-center gap-2 rounded-lg text-[15px] font-semibold px-6 py-3.5 shadow-sm"
+                    style={{ backgroundColor: '#c0392b', color: 'white' }}
+                  >
+                    Explore Public Records
+                  </button>
+                  <button
+                    onClick={() => {
+                      // open wallet button from navbar via click, but as fallback just focus the wallet adapter
+                      const el = document.querySelector('.wallet-adapter-button');
+                      if (el) el.click();
+                    }}
+                    type="button"
+                    className="btn-secondary rounded-lg border text-[15px] font-medium px-6 py-3.5 bg-white"
+                    style={{ borderColor: '#cccccc', color: '#1a1a2e' }}
+                  >
+                    Connect Wallet
+                  </button>
+                </div>
+              </div>
+
+              {/* Visual Side – Nepal typography tile */}
+              <div className="relative z-10 flex justify-end animate-fadeInUp animate-delay-200">
+                <div className="relative rounded-3xl overflow-hidden border border-white/20 shadow-2xl w-[360px] sm:w-[380px] lg:w-[400px] aspect-[4/5] bg-slate-900">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-primary/40 to-accent-crimson/20 z-10"></div>
+                  <div className="absolute inset-0 flex items-center justify-center p-4">
+                    <div
+                      className="w-full h-full rounded-2xl bg-center bg-cover border border-white/10"
+                      data-alt="Stylized 3D digital typography of Nepal with blockchain nodes"
+                      data-location="Nepal"
+                      style={{
+                        backgroundImage:
+                          "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBaCIriVUYqZ1AeMAwWwadXUeYCKJuq5TkmSCopViUbFpe2XrqUM1g2Z8HtdFZ-k0SAOA5f0oJn76Rz-zN_TXyLvltfJmUclpXMTdpzUsDPhNT8j1DxODb8jgnvE0SHCfev-SJPqIlqZk7NIwFqJfG1shmzcVpN9EQ2tePZLqDWnb5CIDwHsxJFJozMzDC0zNRG_Pq9PlMl80_Qu1KCV4CpppnoHJ_8cVrFDhc1Q_7e1SGGmo0XUD5GSBrNgQmloGYFKcKey66huvw')",
+                      }}
+                    ></div>
                   </div>
-                  <p className="text-[var(--text-secondary)] text-[15px] leading-relaxed">{item.desc}</p>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="solution" className="py-20 lg:py-28 bg-white border-t border-slate-200/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl lg:text-4xl font-display font-bold text-center text-[var(--text-primary)] mb-3">What JaggaChain solves</h2>
-          <p className="text-center text-[var(--text-secondary)] mb-14 max-w-2xl mx-auto text-lg">
-            A single source of truth on Solana: every registration and transfer is minted as an NFT and recorded on-chain in real time.
-          </p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { icon: Shield, title: 'Immutable records', desc: 'Each parcel is an NFT on Solana. No one can alter history.' },
-              { icon: Zap, title: 'Real-time minting', desc: 'Registration and transfer NFTs mint on approval; view on Solana Explorer.' },
-              { icon: User, title: 'Citizen portal', desc: 'Connect your wallet to see your parcels and transfer requests.' },
-              { icon: Landmark, title: 'Government approval', desc: 'Admin approves or rejects; each action is recorded on-chain.' },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="text-center p-6 rounded-2xl bg-[var(--bg-subtle)] border border-slate-200/80 card-hover animate-fadeIn"
-                style={{ animationDelay: `${i * 0.1}s` }}
+        {/* Pillars Section */}
+        <section id="pillars" className="py-20 bg-gradient-to-b from-slate-50 to-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-16">
+              <h2 className="text-primary font-bold text-sm uppercase tracking-widest mb-2">The Web3 Advantage</h2>
+              <h3 className="text-4xl font-black text-slate-900">Solana-Powered Web3 Solutions</h3>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { icon: Shield, title: 'Immutable NFT Titles', desc: 'Your land, your token. Every property is minted as a unique NFT, ensuring non-fungible security on the global ledger.' },
+                { icon: CheckCircle2, title: 'Instant Verification', desc: 'Zero-knowledge proofs allow for immediate ownership validation without exposing sensitive personal data.' },
+                { icon: Landmark, title: 'Transparent Audit Logs', desc: 'Every change, transfer, and lien is recorded forever on the blockchain, creating an unalterable history.' },
+                { icon: Zap, title: 'High-Speed Processing', desc: 'Leveraging Solana’s 65k+ TPS architecture for near-instant settlement and minimal transaction fees.' },
+              ].map((item, i) => (
+                <div key={i} className="p-8 rounded-2xl border bg-slate-50 hover:bg-white hover:shadow-xl hover:shadow-primary/5 transition-all group shadow-sm border-slate-200/60">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary transition-colors text-primary group-hover:text-white">
+                    <item.icon className="w-6 h-6" />
+                  </div>
+                  <h4 className="text-xl font-bold mb-3">{item.title}</h4>
+                  <p className="text-slate-500 text-sm leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* How It Works Diagram */}
+        <section id="how-it-works" className="py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-20">
+              <h2 className="text-3xl lg:text-4xl font-black mb-4">From Physical Asset to Digital Title</h2>
+              <p className="text-slate-500 max-w-2xl mx-auto">Our streamlined process ensures every property is legally validated and cryptographically secured in four simple steps.</p>
+            </div>
+            <div className="relative">
+              <div className="hidden lg:block absolute top-1/2 left-0 w-full h-0.5 bg-gradient-to-r from-primary/5 via-primary/40 to-primary/5 -translate-y-1/2 z-0"></div>
+              <div className="grid lg:grid-cols-4 gap-8 relative z-10">
+                {[
+                  { icon: Globe, title: 'Upload Docs', desc: 'Deeds, surveys, and identity verification uploaded to our secure portal.', step: 1 },
+                  { icon: Landmark, title: 'Legal Validation', desc: 'Automated and expert legal checks ensure documentation is valid and clear.', step: 2 },
+                  { icon: Zap, title: 'Minting NFT', desc: 'Property is tokenized on the Solana blockchain as a unique asset.', step: 3 },
+                  { icon: Lock, title: 'Secure Digital Vault', desc: 'Your title is delivered to your encrypted wallet for lifetime access.', step: 4 },
+                ].map((item, i) => (
+                  <div key={i} className="flex flex-col items-center text-center group">
+                    <div className={`w-20 h-20 rounded-full ${item.step === 4 ? 'bg-primary text-white' : 'bg-white text-primary'} shadow-xl border-4 border-slate-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform relative`}>
+                      <item.icon className="w-8 h-8" />
+                      <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-accent-crimson text-white text-[10px] font-bold flex items-center justify-center">{item.step}</div>
+                    </div>
+                    <h5 className="font-bold text-lg mb-2">{item.title}</h5>
+                    <p className="text-sm text-slate-500">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Live Audit Log Preview */}
+        <section className="py-20 bg-slate-900 text-white overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
+              <div>
+                <h2 className="text-primary font-bold text-sm uppercase tracking-widest mb-2">Real-Time Transparency</h2>
+                <h3 className="text-4xl font-black mb-6">Immutable Audit Logs</h3>
+                <p className="text-slate-400 text-lg leading-relaxed mb-8">Experience complete visibility. Every transaction is indexed and searchable, making corruption impossible and due diligence effortless.</p>
+                <ul className="space-y-4">
+                  {['Cryptographic Proof of Title', 'Zero-Downtime Global Access', 'Automated Compliance Checks'].map((text, i) => (
+                    <li key={i} className="flex items-center gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-primary" />
+                      <span>{text}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="relative">
+                <div className="bg-black/40 border border-white/10 rounded-xl p-1 backdrop-blur-sm">
+                  <div className="bg-slate-950 rounded-lg p-6 font-mono text-sm overflow-hidden">
+                    <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-4">
+                      <div className="flex gap-1.5">
+                        <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
+                        <div className="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+                        <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
+                      </div>
+                      <span className="text-[10px] text-slate-500 uppercase font-bold">Live Solana Ledger Feed</span>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex gap-4"><span className="text-primary">14:02:11</span><span className="text-accent-crimson">[MINT]</span><span className="text-slate-400">Title #NFT-882... validated</span></div>
+                      <div className="flex gap-4"><span className="text-primary">13:58:45</span><span className="text-blue-400">[TRANS]</span><span className="text-slate-400">Ownership transfer request: 0x4f...</span></div>
+                      <div className="flex gap-4"><span className="text-primary">13:45:02</span><span className="text-green-400">[VERIF]</span><span className="text-slate-400">Verification successful Asset ID 9922</span></div>
+                      <div className="flex gap-4 opacity-50"><span className="text-primary">13:33:19</span><span className="text-accent-crimson">[MINT]</span><span className="text-slate-400">Title #NFT-881... finalized</span></div>
+                    </div>
+                    <div className="mt-6 pt-4 border-t border-white/5 flex justify-between items-center text-[10px]">
+                      <span className="text-slate-500">Tps: 64,812 | Finality: 0.4s</span>
+                      <span className="text-primary font-bold animate-pulse">● NETWORK SYNCED</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-20 relative overflow-hidden">
+          <div className="absolute inset-0 bg-primary transform -skew-y-3 origin-bottom-right"></div>
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center text-white py-12">
+            <h2 className="text-4xl font-black mb-6">Ready to Secure Your Future?</h2>
+            <p className="text-white/80 text-lg mb-10">Join the thousands of property owners who have already modernized their assets with JaggaChain.</p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => setActiveTab('parcels')}
+                className="bg-accent-crimson hover:bg-red-700 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-xl shadow-black/20"
               >
-                <div className="w-14 h-14 bg-[var(--nepal-blue-dark)] rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <item.icon className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="font-semibold text-[var(--text-primary)] mb-2">{item.title}</h3>
-                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
+                Start Your Registry
+              </button>
+              <button onClick={() => setActiveTab('explorer')} className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-8 py-4 rounded-xl font-bold transition-all">
+                Explore Records
+              </button>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
-      <footer className="border-t border-slate-200 bg-white py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <JaggaChainLogo className="h-11 w-11" />
-            <span className="font-semibold text-[var(--text-primary)] font-display">JaggaChain</span>
+      <footer className="bg-slate-50 border-t border-slate-200 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+            <button onClick={() => setActiveTab('landing')} className="flex items-center group cursor-pointer">
+              <JaggaChainLogo className="h-10 w-auto" />
+            </button>
+            <div className="flex gap-8 text-sm text-slate-500 font-semibold">
+              <a className="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+              <a className="hover:text-primary transition-colors" href="#">Terms of Service</a>
+              <a className="hover:text-primary transition-colors" href="#">Audit Reports</a>
+            </div>
+            <div className="text-sm text-slate-400 font-medium">
+              © 2024 JaggaChain Registry Services.
+            </div>
           </div>
-          <p className="text-sm text-[var(--text-muted)]">Digital Land Registry · Government of Nepal · Powered by Solana</p>
         </div>
       </footer>
     </div>
@@ -619,9 +685,8 @@ function App() {
     <div className="min-h-screen bg-page-nepal">
       {notification.message && (
         <div
-          className={`fixed top-4 left-1/2 -translate-x-1/2 z-[100] max-w-md w-full mx-4 px-4 py-3 rounded-xl shadow-lg flex items-center justify-between gap-4 animate-fadeIn ${
-            notification.type === 'error' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'
-          }`}
+          className={`fixed top-4 left-1/2 -translate-x-1/2 z-[100] max-w-md w-full mx-4 px-4 py-3 rounded-xl shadow-lg flex items-center justify-between gap-4 animate-fadeIn ${notification.type === 'error' ? 'bg-accent-crimson text-white' : 'bg-emerald-600 text-white'
+            }`}
           role="alert"
         >
           <span className="text-sm font-medium">{notification.message}</span>
@@ -637,76 +702,73 @@ function App() {
       )}
       {activeTab === 'landing' && <Landing />}
 
+      {/* Single global navbar on all non-landing pages */}
       {activeTab !== 'landing' && (
         <>
-          <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-[var(--nav-bg)] backdrop-blur-md" style={{ boxShadow: '0 1px 0 rgba(0,0,0,0.04)' }}>
+          <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur-md">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex items-center justify-between h-16">
-                <button
-                  onClick={() => setActiveTab('landing')}
-                  className="flex items-center gap-3 hover:opacity-80 transition"
-                >
-                  <JaggaChainLogo className="h-12 w-12 shrink-0" />
-                  <span className="text-xl font-bold tracking-tight text-[var(--text-primary)] font-display">JaggaChain</span>
-                </button>
+              <div className="flex items-center justify-between h-16 gap-4">
+                <div className="flex items-center gap-6">
+                  <button
+                    onClick={() => setActiveTab('landing')}
+                    className="flex items-center group cursor-pointer"
+                  >
+                    <JaggaChainLogo className="h-10 w-auto" />
+                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { setActiveTab('explorer'); fetchParcels() }}
+                      className={`flex items-center gap-2 px-4 py-2 text-sm font-bold transition-all relative ${activeTab === 'explorer' ? 'text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      <Globe className="w-4 h-4" /> Public Records
+                      {activeTab === 'explorer' && <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-t-full" />}
+                    </button>
+                    <button
+                      onClick={() => { if (!connected) setActiveTab('parcels'); else { setActiveTab('parcels'); fetchParcelsByOwner(walletAddress) } }}
+                      className={`flex items-center gap-2 px-4 py-2 text-sm font-bold transition-all relative ${activeTab === 'parcels' ? 'text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      <LayoutDashboard className="w-4 h-4" /> PORTAL
+                      {activeTab === 'parcels' && <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-t-full" />}
+                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => { setActiveTab('government'); fetchWhitelist() }}
+                        className={`flex items-center gap-2 px-4 py-2 text-sm font-bold transition-all relative ${activeTab === 'government' ? 'text-accent-crimson' : 'text-slate-400 hover:text-slate-600'}`}
+                      >
+                        <Landmark className="w-4 h-4" /> ADMIN
+                        {activeTab === 'government' && <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent-crimson rounded-t-full" />}
+                      </button>
+                    )}
+                  </div>
+                </div>
                 <div className="flex items-center gap-3">
                   {connected ? (
                     <div className="flex items-center gap-3">
                       <span className="hidden sm:block text-right">
-                        <p className="text-xs font-mono text-[var(--text-muted)]">{truncateHash(walletAddress)}</p>
-                        <span className={`inline-flex items-center gap-1 text-xs font-medium ${isAdmin ? 'text-amber-700' : 'text-emerald-600'}`}>
+                        <p className="text-xs font-mono text-slate-400">{truncateHash(walletAddress)}</p>
+                        <span className={`inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider ${isAdmin ? 'text-accent-crimson' : 'text-primary'}`}>
                           {isAdmin ? <><Landmark className="w-3.5 h-3.5" /> Admin</> : <><User className="w-3.5 h-3.5" /> Citizen</>}
                         </span>
                       </span>
-                      <WalletMultiButton className="nav-pill nav-pill-secondary !rounded-full !px-4 !py-2 !text-sm" />
+                      <WalletMultiButton className="!bg-slate-50 !text-slate-800 !border !border-slate-200 !rounded-full !px-4 !py-2 !text-xs !font-bold hover:!bg-slate-100 !transition-all" />
                     </div>
                   ) : (
-                    <WalletMultiButton className="nav-pill nav-pill-primary !bg-[var(--nepal-blue-dark)] !text-white !rounded-full !px-5 !py-2.5" />
+                    <WalletMultiButton className="!bg-primary !text-white !rounded-full !px-5 !py-2.5 !text-sm !font-bold hover:!shadow-lg !transition-all" />
                   )}
                 </div>
               </div>
             </div>
           </header>
 
-          <nav className="bg-white border-b border-slate-200/80">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex gap-1">
-                <button
-                  onClick={() => { setActiveTab('explorer'); fetchParcels() }}
-                  className={`flex items-center gap-2 px-5 py-3.5 text-sm font-semibold rounded-lg transition relative ${activeTab === 'explorer' ? 'text-[var(--nepal-blue-dark)] bg-[var(--nepal-blue)]/8' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-slate-50'}`}
-                >
-                  <Globe className="w-4 h-4" /> Explorer
-                  {activeTab === 'explorer' && <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-[var(--nepal-blue)] rounded-full" />}
-                </button>
-                <button
-                  onClick={() => { if (!connected) setActiveTab('parcels'); else { setActiveTab('parcels'); fetchParcelsByOwner(walletAddress) } }}
-                  className={`flex items-center gap-2 px-5 py-3.5 text-sm font-semibold rounded-lg transition relative ${activeTab === 'parcels' ? 'text-[var(--nepal-blue-dark)] bg-[var(--nepal-blue)]/8' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-slate-50'}`}
-                >
-                  <LayoutDashboard className="w-4 h-4" /> My Portal
-                  {activeTab === 'parcels' && <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-[var(--nepal-blue)] rounded-full" />}
-                </button>
-                {isAdmin && (
-                  <button
-                    onClick={() => { setActiveTab('government'); fetchWhitelist() }}
-                    className={`flex items-center gap-2 px-5 py-3.5 text-sm font-semibold rounded-lg transition relative ${activeTab === 'government' ? 'text-[var(--nepal-blue-dark)] bg-[var(--nepal-blue)]/8' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-slate-50'}`}
-                  >
-                    <Landmark className="w-4 h-4" /> Admin
-                    {activeTab === 'government' && <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-[var(--nepal-blue)] rounded-full" />}
-                  </button>
-                )}
-              </div>
-            </div>
-          </nav>
-
           <main className="max-w-7xl mx-auto px-4 py-8">
             {activeTab === 'explorer' && (
               <div className="animate-fadeIn">
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
-                  <h2 className="text-xl font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                    <Search className="w-5 h-5 text-red-600" />
+                  <h2 className="text-xl font-black text-slate-900 mb-4 flex items-center gap-2">
+                    <Search className="w-5 h-5 text-primary" />
                     Search public land records
                   </h2>
-                  <p className="text-slate-500 mb-4">No wallet required. Search by owner name, district, municipality, or tole.</p>
+                  <p className="text-slate-500 mb-4 font-medium">No wallet required. Search by owner name, district, municipality, or tole.</p>
                   <div className="relative">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input
@@ -714,7 +776,7 @@ function App() {
                       placeholder="Search by owner, district, municipality, or tole..."
                       value={searchQuery}
                       onChange={(e) => searchParcels(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition"
+                      className="w-full pl-12 pr-4 py-4 border border-slate-200 bg-slate-50 rounded-xl focus:ring-2 focus:ring-primary focus:bg-white focus:border-primary outline-none transition-all font-medium"
                     />
                   </div>
                 </div>
@@ -740,11 +802,11 @@ function App() {
                         key={parcel._id}
                         className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden card-hover animate-fadeIn"
                       >
-                        <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-5 py-4">
+                        <div className="bg-slate-900 px-5 py-4">
                           <div className="flex justify-between items-center">
-                            <span className="text-white font-semibold">#{parcel.tokenId}</span>
-                            <span className="px-2 py-1 bg-emerald-500 text-white text-xs rounded-full flex items-center gap-1">
-                              <CheckCircle2 className="w-3.5 h-3.5" /> Registered
+                            <span className="text-white font-bold tracking-tight">#{parcel.tokenId}</span>
+                            <span className="px-2 py-1 bg-green-500/20 text-green-400 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" /> Registered
                             </span>
                           </div>
                         </div>
@@ -809,7 +871,7 @@ function App() {
                         <div className="flex gap-3">
                           <button
                             onClick={() => setShowRegisterModal(true)}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-[#1E3A8A] text-white rounded-xl font-medium hover:bg-[#1d4ed8] transition"
+                            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-bold hover:translate-y-[-1px] transition-all shadow-lg shadow-primary/20 text-sm"
                           >
                             <FileCheck className="w-4 h-4" /> Register land
                           </button>
@@ -910,9 +972,9 @@ function App() {
                         <p className="text-slate-500 mb-6">You don’t have any registered parcels. Register your first land to mint an NFT on Solana.</p>
                         <button
                           onClick={() => setShowRegisterModal(true)}
-                          className="inline-flex items-center gap-2 px-6 py-3 bg-[#1E3A8A] text-white rounded-xl font-medium hover:bg-[#1d4ed8] transition"
+                          className="inline-flex items-center gap-2 px-8 py-3 bg-primary text-white rounded-xl font-bold hover:translate-y-[-1px] transition-all shadow-lg shadow-primary/20"
                         >
-                          <FileCheck className="w-4 h-4" /> Register land
+                          <FileCheck className="w-5 h-5" /> Start My Registry
                         </button>
                       </div>
                     ) : (
@@ -1015,11 +1077,11 @@ function App() {
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-                  <div className="bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] px-6 py-4">
-                    <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                      <FileCheck className="w-5 h-5" /> Registration requests
+                  <div className="bg-slate-900 px-6 py-5 border-b border-white/10">
+                    <h2 className="text-lg font-black text-white flex items-center gap-2">
+                      <FileCheck className="w-5 h-5 text-primary" /> Registration requests
                     </h2>
-                    <p className="text-blue-200 text-sm">Review and approve or reject. When you click Approve/Reject, your wallet will open — confirm the transaction to record the decision on Solana. {feeConfig.adminFeeSol > 0 ? `Fee: ${feeConfig.adminFeeSol} SOL.` : 'Network fee only.'}</p>
+                    <p className="text-slate-400 text-sm mt-1">Review and approve or reject. Action will be recorded on Solana. {feeConfig.adminFeeSol > 0 ? `Fee: ${feeConfig.adminFeeSol} SOL.` : 'Network fee only.'}</p>
                   </div>
                   {registrationRequests.length === 0 ? (
                     <div className="p-8 text-center text-slate-500">No pending registration requests.</div>
@@ -1099,11 +1161,11 @@ function App() {
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                  <div className="bg-gradient-to-r from-red-700 to-red-600 px-6 py-4">
-                    <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                      <Zap className="w-5 h-5" /> Transfer requests
+                  <div className="bg-slate-900 px-6 py-5 border-b border-white/10">
+                    <h2 className="text-lg font-black text-white flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-accent-crimson" /> Transfer requests
                     </h2>
-                    <p className="text-red-200 text-sm">When you Approve or Reject, your wallet will open to confirm — that records the decision on Solana. {feeConfig.adminFeeSol > 0 ? `Fee: ${feeConfig.adminFeeSol} SOL.` : 'Network fee only.'}</p>
+                    <p className="text-slate-400 text-sm mt-1">Action will be recorded on Solana. {feeConfig.adminFeeSol > 0 ? `Fee: ${feeConfig.adminFeeSol} SOL.` : 'Network fee only.'}</p>
                   </div>
                   {transferRequests.length === 0 ? (
                     <div className="p-8 text-center text-slate-500">No pending transfer requests.</div>
@@ -1152,7 +1214,7 @@ function App() {
                                       e.stopPropagation()
                                       handleWhitelistAction(item._id, 'rejected')
                                     }}
-                                    className="flex items-center gap-1 px-4 py-2 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition text-sm"
+                                    className="flex items-center gap-1 px-4 py-2 bg-accent-crimson text-white rounded-xl font-bold hover:bg-red-700 transition text-sm"
                                   >
                                     <XCircle className="w-4 h-4" /> Reject
                                   </button>
@@ -1210,8 +1272,8 @@ function App() {
             className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-semibold text-slate-800 mb-4 flex items-center gap-2">
-              <FileCheck className="w-5 h-5 text-red-600" /> Register new land
+            <h2 className="text-xl font-black text-slate-900 mb-4 flex items-center gap-2">
+              <FileCheck className="w-5 h-5 text-accent-crimson" /> Register new land
             </h2>
             <p className="text-sm text-slate-500 mb-4">
               {feeConfig.citizenFeeSol > 0 ? `${feeConfig.citizenFeeSol} SOL (proof)` : 'Network fee only (no protocol fee)'}{!feeConfig.treasuryWallet && feeConfig.citizenFeeSol > 0 && ' — dev: paying to your wallet'}
@@ -1234,7 +1296,7 @@ function App() {
                   type="text"
                   value={registerForm.ownerName}
                   onChange={(e) => setRegisterForm({ ...registerForm, ownerName: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -1245,7 +1307,7 @@ function App() {
                     type="text"
                     value={registerForm.district}
                     onChange={(e) => setRegisterForm({ ...registerForm, district: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
                   />
                 </div>
                 <div>
@@ -1255,7 +1317,7 @@ function App() {
                     type="text"
                     value={registerForm.municipality}
                     onChange={(e) => setRegisterForm({ ...registerForm, municipality: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
                   />
                 </div>
               </div>
@@ -1267,7 +1329,7 @@ function App() {
                     type="number"
                     value={registerForm.ward}
                     onChange={(e) => setRegisterForm({ ...registerForm, ward: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
                   />
                 </div>
                 <div>
@@ -1277,7 +1339,7 @@ function App() {
                     type="text"
                     value={registerForm.tole}
                     onChange={(e) => setRegisterForm({ ...registerForm, tole: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
                   />
                 </div>
               </div>
@@ -1288,7 +1350,7 @@ function App() {
                     type="number"
                     value={registerForm.bigha}
                     onChange={(e) => setRegisterForm({ ...registerForm, bigha: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
                   />
                 </div>
                 <div>
@@ -1297,7 +1359,7 @@ function App() {
                     type="number"
                     value={registerForm.kattha}
                     onChange={(e) => setRegisterForm({ ...registerForm, kattha: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
                   />
                 </div>
                 <div>
@@ -1306,7 +1368,7 @@ function App() {
                     type="number"
                     value={registerForm.dhur}
                     onChange={(e) => setRegisterForm({ ...registerForm, dhur: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
                   />
                 </div>
               </div>
@@ -1327,7 +1389,7 @@ function App() {
                 <button
                   type="submit"
                   disabled={txLoading === 'registering'}
-                  className="flex-1 px-4 py-2.5 bg-[#1E3A8A] text-white rounded-xl font-medium hover:bg-[#1d4ed8] transition disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2.5 bg-primary text-white rounded-xl font-bold hover:translate-y-[-1px] transition-all shadow-lg shadow-primary/20 disabled:opacity-50 inline-flex items-center justify-center gap-2"
                 >
                   {txLoading === 'registering' ? (
                     <>
@@ -1352,8 +1414,8 @@ function App() {
             className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-semibold text-slate-800 mb-4 flex items-center gap-2">
-              <Zap className="w-5 h-5 text-red-600" /> Transfer parcel
+            <h2 className="text-xl font-black text-slate-900 mb-4 flex items-center gap-2">
+              <Zap className="w-5 h-5 text-accent-crimson" /> Transfer parcel
             </h2>
             <p className="text-sm text-slate-500 mb-4">
               {feeConfig.citizenFeeSol > 0 ? `${feeConfig.citizenFeeSol} SOL (proof)` : 'Network fee only (no protocol fee)'}{!feeConfig.treasuryWallet && feeConfig.citizenFeeSol > 0 && ' — dev: paying to your wallet'}
@@ -1406,7 +1468,7 @@ function App() {
                 <button
                   type="submit"
                   disabled={txLoading === 'transferring'}
-                  className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2.5 bg-accent-crimson text-white rounded-xl font-bold hover:translate-y-[-1px] transition-all shadow-lg shadow-accent-crimson/20 disabled:opacity-50 inline-flex items-center justify-center gap-2"
                 >
                   {txLoading === 'transferring' ? (
                     <>
