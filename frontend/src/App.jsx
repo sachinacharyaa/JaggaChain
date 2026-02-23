@@ -41,7 +41,7 @@ const NepalFlag = () => (
   </svg>
 )
 
-const JaggaChainLogo = ({ className = 'h-[64px] w-auto' }) => (
+const JaggaChainLogo = ({ className = 'h-20 w-auto' }) => (
   <img
     src="/logo.png"
     alt="JaggaChain Logo"
@@ -447,19 +447,19 @@ function App() {
   const Landing = () => (
     <div className="min-h-screen">
       {/* Top Navigation */}
-      <header className="sticky top-0 z-50 w-full border-b border-primary/10 bg-white/80 backdrop-blur-md">
+      <header className="sticky top-0 z-50 w-full border-b border-primary/10 bg-white/90 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
+          <div className="flex h-20 items-center justify-between gap-8">
             <button onClick={() => setActiveTab('landing')} className="flex items-center group cursor-pointer">
               <JaggaChainLogo />
             </button>
-            <nav className="hidden md:flex items-center gap-8">
-              <button onClick={() => setActiveTab('explorer')} className="text-sm font-semibold hover:text-primary transition-colors">Explorer</button>
-              <a className="text-sm font-semibold hover:text-primary transition-colors" href="#pillars">Technology</a>
-              <a className="text-sm font-semibold hover:text-primary transition-colors" href="#how-it-works">How it Works</a>
+            <nav className="hidden md:flex items-center gap-10 text-base lg:text-lg font-semibold text-slate-700">
+              <button onClick={() => setActiveTab('explorer')} className="hover:text-primary transition-colors">Explorer</button>
+              <a className="hover:text-primary transition-colors" href="#pillars">Technology</a>
+              <a className="hover:text-primary transition-colors" href="#how-it-works">How it Works</a>
             </nav>
             <div className="flex items-center gap-4">
-              <WalletMultiButton className="!bg-primary !text-white !px-5 !py-2 !rounded-lg !text-sm !font-bold hover:!bg-primary/90 !transition-all !shadow-lg !shadow-primary/20" />
+              <WalletMultiButton className="!bg-primary !text-white !px-6 !py-3 !rounded-xl !text-sm lg:!text-base !font-bold hover:!bg-primary/90 !transition-all !shadow-lg !shadow-primary/20" />
             </div>
           </div>
         </div>
@@ -653,7 +653,7 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <button onClick={() => setActiveTab('landing')} className="flex items-center group cursor-pointer">
-              <JaggaChainLogo className="h-10 w-auto" />
+              <JaggaChainLogo />
             </button>
             <div className="flex gap-8 text-sm text-slate-500 font-semibold">
               <a className="hover:text-primary transition-colors" href="#">Privacy Policy</a>
@@ -705,27 +705,27 @@ function App() {
       {/* Single global navbar on all non-landing pages */}
       {activeTab !== 'landing' && (
         <>
-          <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur-md">
+          <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-md">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex items-center justify-between h-16 gap-4">
-                <div className="flex items-center gap-6">
+              <div className="flex items-center justify-between h-20 gap-6">
+                <div className="flex items-center gap-8">
                   <button
                     onClick={() => setActiveTab('landing')}
                     className="flex items-center group cursor-pointer"
                   >
-                    <JaggaChainLogo className="h-10 w-auto" />
+                    <JaggaChainLogo />
                   </button>
-                  <div className="flex gap-2">
+                  <div className="flex gap-4">
                     <button
                       onClick={() => { setActiveTab('explorer'); fetchParcels() }}
-                      className={`flex items-center gap-2 px-4 py-2 text-sm font-bold transition-all relative ${activeTab === 'explorer' ? 'text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+                      className={`flex items-center gap-2 px-5 py-2.5 text-sm md:text-base font-semibold transition-all relative ${activeTab === 'explorer' ? 'text-primary' : 'text-slate-400 hover:text-slate-600'}`}
                     >
                       <Globe className="w-4 h-4" /> Public Records
                       {activeTab === 'explorer' && <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-t-full" />}
                     </button>
                     <button
                       onClick={() => { if (!connected) setActiveTab('parcels'); else { setActiveTab('parcels'); fetchParcelsByOwner(walletAddress) } }}
-                      className={`flex items-center gap-2 px-4 py-2 text-sm font-bold transition-all relative ${activeTab === 'parcels' ? 'text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+                      className={`flex items-center gap-2 px-5 py-2.5 text-sm md:text-base font-semibold transition-all relative ${activeTab === 'parcels' ? 'text-primary' : 'text-slate-400 hover:text-slate-600'}`}
                     >
                       <LayoutDashboard className="w-4 h-4" /> PORTAL
                       {activeTab === 'parcels' && <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-t-full" />}
@@ -733,7 +733,7 @@ function App() {
                     {isAdmin && (
                       <button
                         onClick={() => { setActiveTab('government'); fetchWhitelist() }}
-                        className={`flex items-center gap-2 px-4 py-2 text-sm font-bold transition-all relative ${activeTab === 'government' ? 'text-accent-crimson' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`flex items-center gap-2 px-5 py-2.5 text-sm md:text-base font-semibold transition-all relative ${activeTab === 'government' ? 'text-accent-crimson' : 'text-slate-400 hover:text-slate-600'}`}
                       >
                         <Landmark className="w-4 h-4" /> ADMIN
                         {activeTab === 'government' && <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent-crimson rounded-t-full" />}
@@ -745,15 +745,15 @@ function App() {
                   {connected ? (
                     <div className="flex items-center gap-3">
                       <span className="hidden sm:block text-right">
-                        <p className="text-xs font-mono text-slate-400">{truncateHash(walletAddress)}</p>
-                        <span className={`inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider ${isAdmin ? 'text-accent-crimson' : 'text-primary'}`}>
-                          {isAdmin ? <><Landmark className="w-3.5 h-3.5" /> Admin</> : <><User className="w-3.5 h-3.5" /> Citizen</>}
+                        <p className="text-xs md:text-sm font-mono text-slate-400">{truncateHash(walletAddress)}</p>
+                        <span className={`inline-flex items-center gap-1 text-[11px] md:text-xs font-bold uppercase tracking-wider ${isAdmin ? 'text-accent-crimson' : 'text-primary'}`}>
+                          {isAdmin ? <><Landmark className="w-4 h-4" /> Admin</> : <><User className="w-4 h-4" /> Citizen</>}
                         </span>
                       </span>
-                      <WalletMultiButton className="!bg-slate-50 !text-slate-800 !border !border-slate-200 !rounded-full !px-4 !py-2 !text-xs !font-bold hover:!bg-slate-100 !transition-all" />
+                      <WalletMultiButton className="!bg-slate-50 !text-slate-800 !border !border-slate-200 !rounded-full !px-5 !py-2.5 !text-sm !font-bold hover:!bg-slate-100 !transition-all" />
                     </div>
                   ) : (
-                    <WalletMultiButton className="!bg-primary !text-white !rounded-full !px-5 !py-2.5 !text-sm !font-bold hover:!shadow-lg !transition-all" />
+                    <WalletMultiButton className="!bg-primary !text-white !rounded-full !px-6 !py-3 !text-sm md:text-base !font-bold hover:!shadow-lg !transition-all" />
                   )}
                 </div>
               </div>
