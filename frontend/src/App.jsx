@@ -476,9 +476,7 @@ function App() {
                   National land trust layer on Solana
                 </div>
                 <h1 className="font-display font-black text-[32px] sm:text-[40px] lg:text-[52px] leading-[1.15] text-[#1a1a2e]">
-                  From paper disputes to{' '}
-                  <span className="text-[#c0392b]">verifiable ownership</span>{' '}
-                  in real time.
+                  Secure <span className="text-[#c0392b]">Land Ownership</span> on the <span className="text-primary">Blockchain</span>.
                 </h1>
                 <p className="subtitle text-[15px] text-[#555] leading-[1.7] max-w-[420px]">
                   Each registration, transfer request, approval, and rejection gets a Solana trail with explorer links.
@@ -610,7 +608,14 @@ function App() {
                   { icon: Lock, title: 'Secure Digital Vault', desc: 'Your title is delivered to your encrypted wallet for lifetime access.', step: 4 },
                 ].map((item, i) => (
                   <div key={i} className="flex flex-col items-center text-center group">
-                    <div className={`w-20 h-20 rounded-full ${item.step === 4 ? 'bg-primary text-white' : 'bg-white text-primary'} shadow-xl border-4 border-slate-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform relative`}>
+                    <div
+                      className={`w-20 h-20 rounded-full shadow-xl border-4 border-slate-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform relative ${[
+                        'bg-blue-700 text-white',
+                        'bg-teal-700 text-white',
+                        'bg-violet-700 text-white',
+                        'bg-primary text-white',
+                      ][i]}`}
+                    >
                       <item.icon className="w-8 h-8" />
                       <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-accent-crimson text-white text-[10px] font-bold flex items-center justify-center">{item.step}</div>
                     </div>
