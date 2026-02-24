@@ -527,6 +527,46 @@ function App() {
           </div>
         </section>
 
+        {/* Problem Section (Second Full Page) */}
+        <section id="problem" className="min-h-screen flex items-center bg-gradient-to-b from-white to-slate-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-16 lg:py-24">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+              <div className="animate-fadeInUp">
+                <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-accent-crimson mb-3">
+                  Current challenge
+                </p>
+                <h2 className="text-[30px] sm:text-[38px] lg:text-[48px] leading-[1.15] font-black text-slate-900">
+                  What is the problem with today&apos;s land registry and transfer ownership?
+                </h2>
+                <p className="mt-5 text-[16px] text-slate-600 leading-[1.8] max-w-[620px]">
+                  Paper records, manual approvals, and disconnected offices slow down registration and ownership transfer.
+                  This creates delays, fraud risk, and costly title disputes for citizens.
+                </p>
+                <div className="mt-8 grid sm:grid-cols-3 gap-3">
+                  <div className="landing-problem-chip landing-chip-1 rounded-xl border border-slate-200 p-4 text-sm font-semibold text-slate-700 shadow-sm">
+                    Delayed verification
+                  </div>
+                  <div className="landing-problem-chip landing-chip-2 rounded-xl border border-slate-200 p-4 text-sm font-semibold text-slate-700 shadow-sm">
+                    Ownership conflicts
+                  </div>
+                  <div className="landing-problem-chip landing-chip-3 rounded-xl border border-slate-200 p-4 text-sm font-semibold text-slate-700 shadow-sm">
+                    Fraud and tampering risk
+                  </div>
+                </div>
+              </div>
+              <div className="animate-fadeInUp animate-delay-100">
+                <div className="landing-problem-visual rounded-3xl border border-slate-200 p-3 shadow-xl">
+                  <img
+                    src="/problem-land-registry.svg"
+                    alt="Illustration showing delays and disputes in traditional land registry and ownership transfer"
+                    className="w-full h-auto rounded-2xl"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Pillars Section */}
         <section id="pillars" className="py-20 bg-gradient-to-b from-slate-50 to-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -541,8 +581,8 @@ function App() {
                 { icon: Landmark, title: 'Transparent Audit Logs', desc: 'Every change, transfer, and lien is recorded forever on the blockchain, creating an unalterable history.' },
                 { icon: Zap, title: 'High-Speed Processing', desc: 'Leveraging Solana’s 65k+ TPS architecture for near-instant settlement and minimal transaction fees.' },
               ].map((item, i) => (
-                <div key={i} className="p-8 rounded-2xl border bg-slate-50 hover:bg-white hover:shadow-xl hover:shadow-primary/5 transition-all group shadow-sm border-slate-200/60">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary transition-colors text-primary group-hover:text-white">
+                <div key={i} className={`landing-pillar-card landing-pillar-tone-${i + 1} p-8 rounded-2xl border transition-all group shadow-sm border-slate-200/60 hover:shadow-xl hover:shadow-primary/10`}>
+                  <div className="w-12 h-12 rounded-xl bg-white/70 ring-1 ring-white/80 backdrop-blur-sm flex items-center justify-center mb-6 group-hover:bg-primary transition-colors text-primary group-hover:text-white">
                     <item.icon className="w-6 h-6" />
                   </div>
                   <h4 className="text-xl font-bold mb-3">{item.title}</h4>
@@ -682,7 +722,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-page-nepal">
+    <div className="app-shell min-h-screen bg-page-nepal">
       {notification.message && (
         <div
           className={`fixed top-4 left-1/2 -translate-x-1/2 z-[100] max-w-md w-full mx-4 px-4 py-3 rounded-xl shadow-lg flex items-center justify-between gap-4 animate-fadeIn ${notification.type === 'error' ? 'bg-accent-crimson text-white' : 'bg-emerald-600 text-white'
@@ -705,7 +745,7 @@ function App() {
       {/* Single global navbar on all non-landing pages */}
       {activeTab !== 'landing' && (
         <>
-          <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-md">
+          <header className="app-topbar sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-md">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex items-center justify-between h-20 gap-6">
                 <div className="flex items-center gap-8">
@@ -763,7 +803,7 @@ function App() {
           <main className="max-w-7xl mx-auto px-4 py-8">
             {activeTab === 'explorer' && (
               <div className="animate-fadeIn">
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
+                <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
                   <h2 className="text-xl font-black text-slate-900 mb-4 flex items-center gap-2">
                     <Search className="w-5 h-5 text-primary" />
                     Search public land records
@@ -782,7 +822,7 @@ function App() {
                 </div>
 
                 {!searched ? (
-                  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-16 text-center">
+                  <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-16 text-center">
                     <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                       <Globe className="w-10 h-10 text-slate-400" />
                     </div>
@@ -790,7 +830,7 @@ function App() {
                     <p className="text-slate-500">Enter a search term to view land records. Wallet connection is optional here.</p>
                   </div>
                 ) : parcels.length === 0 ? (
-                  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-16 text-center">
+                  <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-16 text-center">
                     <FileWarning className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                     <h2 className="text-xl font-semibold text-slate-800 mb-2">No records found</h2>
                     <p className="text-slate-500">No land records match your search.</p>
@@ -800,7 +840,7 @@ function App() {
                     {parcels.map((parcel) => (
                       <div
                         key={parcel._id}
-                        className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden card-hover animate-fadeIn"
+                        className="premium-card rounded-2xl shadow-sm border border-slate-200 overflow-hidden card-hover animate-fadeIn"
                       >
                         <div className="bg-slate-900 px-5 py-4">
                           <div className="flex justify-between items-center">
@@ -849,7 +889,7 @@ function App() {
             {activeTab === 'parcels' && (
               <div className="animate-fadeIn">
                 {!connected ? (
-                  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-16 text-center">
+                  <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-16 text-center">
                     <div className="w-20 h-20 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                       <Lock className="w-10 h-10 text-amber-600" />
                     </div>
@@ -859,7 +899,7 @@ function App() {
                   </div>
                 ) : (
                   <div>
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
+                    <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
                       <div className="flex flex-wrap items-center justify-between gap-4">
                         <div>
                           <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
@@ -880,7 +920,7 @@ function App() {
                     </div>
 
                     {myRequests.length > 0 && (
-                      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
+                      <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
                         <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
                           <FileCheck className="w-5 h-5" /> My requests
                         </h3>
@@ -913,7 +953,7 @@ function App() {
                                 <span className="text-sm text-slate-500">{new Date(r.createdAt).toLocaleDateString()}</span>
                               </div>
                               {expandedRequestId === r._id && (
-                                <div className="px-4 pb-4 pt-2 border-t border-slate-100 bg-white">
+                                <div className="px-4 pb-4 pt-2 border-t border-slate-100 bg-slate-50/70">
                                   <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 text-sm space-y-3">
                                     {r.requestType === 'registration' ? (
                                       <>
@@ -966,7 +1006,7 @@ function App() {
                     )}
 
                     {myParcels.length === 0 ? (
-                      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-16 text-center">
+                      <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-16 text-center">
                         <MapPin className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                         <h2 className="text-xl font-semibold text-slate-800 mb-2">No parcels yet</h2>
                         <p className="text-slate-500 mb-6">You don’t have any registered parcels. Register your first land to mint an NFT on Solana.</p>
@@ -982,7 +1022,7 @@ function App() {
                         {myParcels.map((parcel) => (
                           <div
                             key={parcel._id}
-                            className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 card-hover"
+                            className="premium-card rounded-2xl shadow-sm border border-slate-200 p-6 card-hover"
                           >
                             <div className="flex flex-wrap items-start justify-between gap-4">
                               <div className="flex-1">
@@ -1030,7 +1070,7 @@ function App() {
             )}
 
             {activeTab === 'government' && !isAdmin && connected && (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-16 text-center animate-fadeIn">
+              <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-16 text-center animate-fadeIn">
                 <Landmark className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                 <h2 className="text-xl font-semibold text-slate-800 mb-2">Admin access required</h2>
                 <p className="text-slate-500 mb-6">This area is only available to authorized government wallets.</p>
@@ -1041,7 +1081,7 @@ function App() {
             {activeTab === 'government' && isAdmin && (
               <div className="animate-fadeIn">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 card-hover">
+                  <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-6 card-hover">
                     <div className="flex items-center gap-4">
                       <div className="p-3 rounded-xl bg-red-100">
                         <Mountain className="w-8 h-8 text-red-600" />
@@ -1052,7 +1092,7 @@ function App() {
                       </div>
                     </div>
                   </div>
-                  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 card-hover">
+                  <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-6 card-hover">
                     <div className="flex items-center gap-4">
                       <div className="p-3 rounded-xl bg-amber-100">
                         <FileCheck className="w-8 h-8 text-amber-600" />
@@ -1063,7 +1103,7 @@ function App() {
                       </div>
                     </div>
                   </div>
-                  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 card-hover">
+                  <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-6 card-hover">
                     <div className="flex items-center gap-4">
                       <div className="p-3 rounded-xl bg-blue-100">
                         <Zap className="w-8 h-8 text-blue-600" />
@@ -1076,7 +1116,7 @@ function App() {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+                <div className="premium-card rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
                   <div className="bg-slate-900 px-6 py-5 border-b border-white/10">
                     <h2 className="text-lg font-black text-white flex items-center gap-2">
                       <FileCheck className="w-5 h-5 text-primary" /> Registration requests
@@ -1160,7 +1200,7 @@ function App() {
                   )}
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="premium-card rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                   <div className="bg-slate-900 px-6 py-5 border-b border-white/10">
                     <h2 className="text-lg font-black text-white flex items-center gap-2">
                       <Zap className="w-5 h-5 text-accent-crimson" /> Transfer requests
@@ -1269,7 +1309,7 @@ function App() {
           onClick={() => setShowRegisterModal(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            className="premium-card rounded-2xl shadow-2xl border border-slate-200 p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-xl font-black text-slate-900 mb-4 flex items-center gap-2">
@@ -1411,7 +1451,7 @@ function App() {
           onClick={() => setShowTransferModal(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md"
+            className="premium-card rounded-2xl shadow-2xl border border-slate-200 p-6 w-full max-w-md"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-xl font-black text-slate-900 mb-4 flex items-center gap-2">
