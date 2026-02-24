@@ -580,7 +580,7 @@ function App() {
                 { icon: Zap, title: 'High-Speed Processing', desc: 'Leveraging Solana’s 65k+ TPS architecture for near-instant settlement and minimal transaction fees.' },
               ].map((item, i) => (
                 <div key={i} className={`landing-pillar-card landing-pillar-tone-${i + 1} p-8 rounded-2xl border transition-all group shadow-sm border-slate-200/60 hover:shadow-xl hover:shadow-primary/10`}>
-                  <div className="w-12 h-12 rounded-xl bg-white/70 ring-1 ring-white/80 backdrop-blur-sm flex items-center justify-center mb-6 group-hover:bg-primary transition-colors text-primary group-hover:text-white">
+                  <div className="landing-pillar-icon w-12 h-12 rounded-xl bg-white/70 ring-1 ring-white/80 backdrop-blur-sm flex items-center justify-center mb-6 transition-all text-primary">
                     <item.icon className="w-6 h-6" />
                   </div>
                   <h4 className="text-xl font-bold mb-3">{item.title}</h4>
