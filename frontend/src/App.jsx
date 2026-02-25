@@ -21,6 +21,8 @@ import {
   LayoutDashboard,
   Globe,
   User,
+  Github,
+  Mail,
 } from 'lucide-react'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
@@ -149,7 +151,7 @@ function App() {
     return signature
   }
 
-  /** Pay registration fee and record details in one tx. Wallet will open to confirm — that's your Solana proof. */
+  /** Pay registration fee and record details in one tx. Wallet will open to confirm Ã¢â‚¬â€ that's your Solana proof. */
   const payRegistrationTx = async (lamports, payload) => {
     if (!connected || !publicKey) throw new Error('Connect your wallet first.')
     const toPubkey = feeConfig.treasuryWallet || publicKey.toBase58()
@@ -429,7 +431,7 @@ function App() {
   const truncateHash = (hash) => (hash ? hash.slice(0, 8) + '...' + hash.slice(-8) : '-')
 
   const formatSize = (size) => {
-    if (!size) return '—'
+    if (!size) return 'Ã¢â‚¬â€'
     const parts = []
     if (size.bigha) parts.push(`${size.bigha} Bigha`)
     if (size.kattha) parts.push(`${size.kattha} Kattha`)
@@ -454,9 +456,9 @@ function App() {
               <JaggaChainLogo />
             </button>
             <nav className="hidden md:flex items-center gap-10 text-base lg:text-lg font-semibold text-slate-700">
-              <button onClick={() => setActiveTab('explorer')} className="hover:text-primary transition-colors">Explorer</button>
               <a className="hover:text-primary transition-colors" href="#pillars">Technology</a>
               <a className="hover:text-primary transition-colors" href="#how-it-works">How it Works</a>
+              <button onClick={() => setActiveTab('explorer')} className="hover:text-primary transition-colors">Explorer</button>
             </nav>
             <div className="flex items-center gap-4">
               <WalletMultiButton className="!bg-primary !text-white !px-6 !py-3 !rounded-xl !text-sm lg:!text-base !font-bold hover:!bg-primary/90 !transition-all !shadow-lg !shadow-primary/20" />
@@ -504,7 +506,7 @@ function App() {
                 </div>
               </div>
 
-              {/* Visual Side – Nepal typography tile */}
+              {/* Visual Side Ã¢â‚¬â€œ Nepal typography tile */}
               <div className="relative z-10 flex justify-end animate-fadeInUp animate-delay-200">
                 <div className="relative rounded-3xl overflow-hidden border border-white/20 shadow-2xl w-[360px] sm:w-[380px] lg:w-[400px] aspect-[4/5] bg-slate-900">
                   <div className="absolute inset-0 bg-gradient-to-tr from-primary/40 to-accent-crimson/20 z-10"></div>
@@ -577,7 +579,7 @@ function App() {
                 { icon: Shield, title: 'Immutable NFT Titles', desc: 'Your land, your token. Every property is minted as a unique NFT, ensuring non-fungible security on the global ledger.' },
                 { icon: CheckCircle2, title: 'Instant Verification', desc: 'Zero-knowledge proofs allow for immediate ownership validation without exposing sensitive personal data.' },
                 { icon: Landmark, title: 'Transparent Audit Logs', desc: 'Every change, transfer, and lien is recorded forever on the blockchain, creating an unalterable history.' },
-                { icon: Zap, title: 'High-Speed Processing', desc: 'Leveraging Solana’s 65k+ TPS architecture for near-instant settlement and minimal transaction fees.' },
+                { icon: Zap, title: 'High-Speed Processing', desc: 'Leveraging SolanaÃ¢â‚¬â„¢s 65k+ TPS architecture for near-instant settlement and minimal transaction fees.' },
               ].map((item, i) => (
                 <div key={i} className={`landing-pillar-card landing-pillar-tone-${i + 1} p-8 rounded-2xl border transition-all group shadow-sm border-slate-200/60 hover:shadow-xl hover:shadow-primary/10`}>
                   <div className="landing-pillar-icon w-12 h-12 rounded-xl bg-white/70 ring-1 ring-white/80 backdrop-blur-sm flex items-center justify-center mb-6 transition-all text-primary">
@@ -663,7 +665,7 @@ function App() {
                     </div>
                     <div className="mt-6 pt-4 border-t border-white/5 flex justify-between items-center text-[10px]">
                       <span className="text-slate-500">Tps: 64,812 | Finality: 0.4s</span>
-                      <span className="text-primary font-bold animate-pulse">● NETWORK SYNCED</span>
+                      <span className="text-primary font-bold animate-pulse">Ã¢â€”Â NETWORK SYNCED</span>
                     </div>
                   </div>
                 </div>
@@ -693,20 +695,51 @@ function App() {
         </section>
       </main>
 
-      <footer className="bg-hero-nepal py-12">
+      <footer className="bg-[#020b23] text-slate-100 pt-14 pb-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <button onClick={() => setActiveTab('landing')} className="flex items-center group cursor-pointer">
-              <JaggaChainLogo />
-            </button>
-            <div className="flex gap-8 text-sm text-slate-500 font-semibold">
-              <a className="hover:text-primary transition-colors" href="#">Privacy Policy</a>
-              <a className="hover:text-primary transition-colors" href="#">Terms of Service</a>
-              <a className="hover:text-primary transition-colors" href="#">Audit Reports</a>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            <div>
+              <button onClick={() => setActiveTab('landing')} className="mb-4 flex items-center group cursor-pointer">
+                <JaggaChainLogo className="h-20 w-auto" />
+              </button>
+              <h3 className="text-2xl font-black mb-3">JaggaChain</h3>
+              <div className="h-1 w-14 bg-primary rounded-full mb-4"></div>
+              <p className="text-slate-300 leading-relaxed text-sm md:text-base max-w-md">
+                JaggaChain is an innovative side project designed to strengthen Nepal's government systems and elevate e-governance to the next level.
+              </p>
             </div>
-            <div className="text-sm text-slate-400 font-medium">
-              © 2024 JaggaChain Registry Services.
+
+            <div>
+              <h3 className="text-2xl font-black mb-3">Connect With Us</h3>
+              <div className="h-1 w-14 bg-fuchsia-500 rounded-full mb-5"></div>
+              <a
+                href="https://github.com/sachinacharyaa/JaggaChain"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-900/70 hover:bg-slate-900 transition-colors font-semibold"
+              >
+                <Github className="w-5 h-5" />
+                JaggaChain on GitHub
+              </a>
             </div>
+
+            <div>
+              <h3 className="text-2xl font-black mb-3">Contact Us</h3>
+              <div className="h-1 w-14 bg-pink-500 rounded-full mb-5"></div>
+              <a
+                href="mailto:thesachinacharya@gmail.com"
+                className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-slate-900/70 hover:bg-slate-900 text-slate-200 hover:text-white transition-colors"
+                aria-label="Email JaggaChain"
+                title="thesachinacharya@gmail.com"
+              >
+                <Mail className="w-5 h-5" />
+              </a>
+            </div>
+          </div>
+
+          <div className="mt-10 pt-5 border-t border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm text-slate-400">
+            <p>Copyright &copy; 2026 JaggaChain</p>
+            <p>{'Made with \u2764\uFE0F For Citizens'}</p>
           </div>
         </div>
       </footer>
@@ -751,41 +784,39 @@ function App() {
         <>
           <header className="app-topbar sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-md">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex items-center justify-between h-20 gap-6">
-                <div className="flex items-center gap-8">
+              <div className="relative flex items-center h-20">
+                <button
+                  onClick={() => setActiveTab('landing')}
+                  className="flex items-center group cursor-pointer shrink-0"
+                >
+                  <JaggaChainLogo />
+                </button>
+                <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-4">
                   <button
-                    onClick={() => setActiveTab('landing')}
-                    className="flex items-center group cursor-pointer"
+                    onClick={() => { setActiveTab('explorer'); fetchParcels() }}
+                    className={`flex items-center gap-2 px-5 py-2.5 text-sm md:text-base font-semibold transition-all relative ${activeTab === 'explorer' ? 'text-primary' : 'text-slate-400 hover:text-slate-600'}`}
                   >
-                    <JaggaChainLogo />
+                    <Globe className="w-4 h-4" /> Public Records
+                    {activeTab === 'explorer' && <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-t-full" />}
                   </button>
-                  <div className="flex gap-4">
+                  <button
+                    onClick={() => { if (!connected) setActiveTab('parcels'); else { setActiveTab('parcels'); fetchParcelsByOwner(walletAddress) } }}
+                    className={`flex items-center gap-2 px-5 py-2.5 text-sm md:text-base font-semibold transition-all relative ${activeTab === 'parcels' ? 'text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+                  >
+                    <LayoutDashboard className="w-4 h-4" /> PORTAL
+                    {activeTab === 'parcels' && <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-t-full" />}
+                  </button>
+                  {isAdmin && (
                     <button
-                      onClick={() => { setActiveTab('explorer'); fetchParcels() }}
-                      className={`flex items-center gap-2 px-5 py-2.5 text-sm md:text-base font-semibold transition-all relative ${activeTab === 'explorer' ? 'text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+                      onClick={() => { setActiveTab('government'); fetchWhitelist() }}
+                      className={`flex items-center gap-2 px-5 py-2.5 text-sm md:text-base font-semibold transition-all relative ${activeTab === 'government' ? 'text-accent-crimson' : 'text-slate-400 hover:text-slate-600'}`}
                     >
-                      <Globe className="w-4 h-4" /> Public Records
-                      {activeTab === 'explorer' && <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-t-full" />}
+                      <Landmark className="w-4 h-4" /> ADMIN
+                      {activeTab === 'government' && <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent-crimson rounded-t-full" />}
                     </button>
-                    <button
-                      onClick={() => { if (!connected) setActiveTab('parcels'); else { setActiveTab('parcels'); fetchParcelsByOwner(walletAddress) } }}
-                      className={`flex items-center gap-2 px-5 py-2.5 text-sm md:text-base font-semibold transition-all relative ${activeTab === 'parcels' ? 'text-primary' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                      <LayoutDashboard className="w-4 h-4" /> PORTAL
-                      {activeTab === 'parcels' && <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-t-full" />}
-                    </button>
-                    {isAdmin && (
-                      <button
-                        onClick={() => { setActiveTab('government'); fetchWhitelist() }}
-                        className={`flex items-center gap-2 px-5 py-2.5 text-sm md:text-base font-semibold transition-all relative ${activeTab === 'government' ? 'text-accent-crimson' : 'text-slate-400 hover:text-slate-600'}`}
-                      >
-                        <Landmark className="w-4 h-4" /> ADMIN
-                        {activeTab === 'government' && <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent-crimson rounded-t-full" />}
-                      </button>
-                    )}
-                  </div>
+                  )}
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="ml-auto flex items-center gap-3">
                   {connected ? (
                     <div className="flex items-center gap-3">
                       <span className="hidden sm:block text-right">
@@ -964,10 +995,10 @@ function App() {
                                         <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                                           <div><span className="text-slate-500">Owner name</span><br /><span className="font-medium text-slate-800">{r.ownerName}</span></div>
                                           <div><span className="text-slate-500">Wallet</span><br /><span className="font-mono text-slate-800 break-all">{r.walletAddress}</span></div>
-                                          <div><span className="text-slate-500">District</span><br /><span className="text-slate-800">{r.location?.district || '—'}</span></div>
-                                          <div><span className="text-slate-500">Municipality</span><br /><span className="text-slate-800">{r.location?.municipality || '—'}</span></div>
-                                          <div><span className="text-slate-500">Ward</span><br /><span className="text-slate-800">{r.location?.ward ?? '—'}</span></div>
-                                          <div><span className="text-slate-500">Tole</span><br /><span className="text-slate-800">{r.location?.tole || '—'}</span></div>
+                                          <div><span className="text-slate-500">District</span><br /><span className="text-slate-800">{r.location?.district || 'Ã¢â‚¬â€'}</span></div>
+                                          <div><span className="text-slate-500">Municipality</span><br /><span className="text-slate-800">{r.location?.municipality || 'Ã¢â‚¬â€'}</span></div>
+                                          <div><span className="text-slate-500">Ward</span><br /><span className="text-slate-800">{r.location?.ward ?? 'Ã¢â‚¬â€'}</span></div>
+                                          <div><span className="text-slate-500">Tole</span><br /><span className="text-slate-800">{r.location?.tole || 'Ã¢â‚¬â€'}</span></div>
                                           <div><span className="text-slate-500">Size</span><br /><span className="text-slate-800">{formatSize(r.size)}</span></div>
                                           <div><span className="text-slate-500">Submitted</span><br /><span className="text-slate-800">{new Date(r.createdAt).toLocaleString()}</span></div>
                                         </div>
@@ -987,7 +1018,7 @@ function App() {
                                           <div><span className="text-slate-500">Your wallet</span><br /><span className="font-mono text-slate-800 break-all">{r.walletAddress}</span></div>
                                           <div><span className="text-slate-500">To (recipient)</span><br /><span className="text-slate-800">{r.toName}</span></div>
                                           <div><span className="text-slate-500">Recipient wallet</span><br /><span className="font-mono text-slate-800 break-all">{r.toWallet}</span></div>
-                                          <div><span className="text-slate-500">Parcel ID</span><br /><span className="font-mono text-slate-800">{r.parcelId || '—'}</span></div>
+                                          <div><span className="text-slate-500">Parcel ID</span><br /><span className="font-mono text-slate-800">{r.parcelId || 'Ã¢â‚¬â€'}</span></div>
                                           <div><span className="text-slate-500">Submitted</span><br /><span className="text-slate-800">{new Date(r.createdAt).toLocaleString()}</span></div>
                                         </div>
                                         {r.paymentTxSignature && !r.paymentTxSignature.startsWith('dev-') && (
@@ -1013,7 +1044,7 @@ function App() {
                       <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-16 text-center">
                         <MapPin className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                         <h2 className="text-xl font-semibold text-slate-800 mb-2">No parcels yet</h2>
-                        <p className="text-slate-500 mb-6">You don’t have any registered parcels. Register your first land to mint an NFT on Solana.</p>
+                        <p className="text-slate-500 mb-6">You donÃ¢â‚¬â„¢t have any registered parcels. Register your first land to mint an NFT on Solana.</p>
                         <button
                           onClick={() => setShowRegisterModal(true)}
                           className="inline-flex items-center gap-2 px-8 py-3 bg-primary text-white rounded-xl font-bold hover:translate-y-[-1px] transition-all shadow-lg shadow-primary/20"
@@ -1320,7 +1351,7 @@ function App() {
               <FileCheck className="w-5 h-5 text-accent-crimson" /> Register new land
             </h2>
             <p className="text-sm text-slate-500 mb-4">
-              {feeConfig.citizenFeeSol > 0 ? `${feeConfig.citizenFeeSol} SOL (proof)` : 'Network fee only (no protocol fee)'}{!feeConfig.treasuryWallet && feeConfig.citizenFeeSol > 0 && ' — dev: paying to your wallet'}
+              {feeConfig.citizenFeeSol > 0 ? `${feeConfig.citizenFeeSol} SOL (proof)` : 'Network fee only (no protocol fee)'}{!feeConfig.treasuryWallet && feeConfig.citizenFeeSol > 0 && ' Ã¢â‚¬â€ dev: paying to your wallet'}
             </p>
             {!feeConfig.solanaConfigured && (
               <div className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
@@ -1329,7 +1360,7 @@ function App() {
             )}
             {feeConfig.solanaConfigured && (
               <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
-                When you submit, <strong>your wallet (e.g. Phantom) will open</strong>. Confirm the transaction there — that is your Solana proof. After government approval, a parcel NFT will be minted to your wallet.
+                When you submit, <strong>your wallet (e.g. Phantom) will open</strong>. Confirm the transaction there Ã¢â‚¬â€ that is your Solana proof. After government approval, a parcel NFT will be minted to your wallet.
               </div>
             )}
             <form onSubmit={handleRegistration} className="space-y-4">
@@ -1437,7 +1468,7 @@ function App() {
                 >
                   {txLoading === 'registering' ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" /> Submitting…
+                      <Loader2 className="w-4 h-4 animate-spin" /> SubmittingÃ¢â‚¬Â¦
                     </>
                   ) : (
                     'Submit for approval'
@@ -1462,7 +1493,7 @@ function App() {
               <Zap className="w-5 h-5 text-accent-crimson" /> Transfer parcel
             </h2>
             <p className="text-sm text-slate-500 mb-4">
-              {feeConfig.citizenFeeSol > 0 ? `${feeConfig.citizenFeeSol} SOL (proof)` : 'Network fee only (no protocol fee)'}{!feeConfig.treasuryWallet && feeConfig.citizenFeeSol > 0 && ' — dev: paying to your wallet'}
+              {feeConfig.citizenFeeSol > 0 ? `${feeConfig.citizenFeeSol} SOL (proof)` : 'Network fee only (no protocol fee)'}{!feeConfig.treasuryWallet && feeConfig.citizenFeeSol > 0 && ' Ã¢â‚¬â€ dev: paying to your wallet'}
             </p>
             {!feeConfig.solanaConfigured && (
               <div className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
@@ -1471,7 +1502,7 @@ function App() {
             )}
             {feeConfig.solanaConfigured && (
               <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
-                When you submit, <strong>your wallet will open</strong>. Confirm the transaction — that records your transfer request on Solana.
+                When you submit, <strong>your wallet will open</strong>. Confirm the transaction Ã¢â‚¬â€ that records your transfer request on Solana.
               </div>
             )}
             <form onSubmit={handleTransfer} className="space-y-4">
@@ -1516,7 +1547,7 @@ function App() {
                 >
                   {txLoading === 'transferring' ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" /> Processing…
+                      <Loader2 className="w-4 h-4 animate-spin" /> ProcessingÃ¢â‚¬Â¦
                     </>
                   ) : (
                     'Request transfer'
