@@ -8,10 +8,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Fee config: citizen pays when registering/transfer request; admin pays when approving/rejecting (proof on-chain)
-const FEE_CITIZEN_SOL = parseFloat(process.env.FEE_CITIZEN_SOL || '0');
-const FEE_ADMIN_SOL = parseFloat(process.env.FEE_ADMIN_SOL || '0');
+// Fee config: Citizen 0.02, Land Revenue Officer (proposal) 0.05, Chief Land Revenue Officer (approve/reject) 0.08
+const FEE_CITIZEN_SOL = parseFloat(process.env.FEE_CITIZEN_SOL || '0.02');
+const FEE_LRO_SOL = parseFloat(process.env.FEE_LRO_SOL || '0.05');
+const FEE_CLRO_SOL = parseFloat(process.env.FEE_CLRO_SOL || '0.08');
 const TREASURY_WALLET = process.env.TREASURY_WALLET || '';
+const ENABLE_DEMO_SEED = process.env.ENABLE_DEMO_SEED === 'true';
 
 const MONGO_URI = 'mongodb+srv://sachinacharya365official_db_user:kEX4fEHa1FNjVyWt@cluster0.k8tooiv.mongodb.net/onChain-Jagga';
 
@@ -39,6 +41,10 @@ const parcelSchema = new mongoose.Schema({
   transactionHash: String,
   mintAddress: String,
   status: { type: String, default: 'registered' },
+  // Three transactions from registration approval flow (for Public Records detail)
+  citizenTxSignature: String,      // User (Citizen) transaction
+  lroProposalTxSignature: String,  // Land Revenue Officer (मालपोत अधिकृत) proposal tx
+  clroDecisionTxSignature: String, // Chief Land Revenue Officer (प्रमुख मालपोत अधिकृत) approve/reject tx
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
@@ -62,9 +68,10 @@ const whitelistSchema = new mongoose.Schema({
   toWallet: String,
   toName: String,
   parcelId: String,
-  paymentTxSignature: String,      // citizen SOL fee tx (proof of payment)
-  adminPaymentTxSignature: String, // admin SOL fee tx when approve/reject
-  nftTransferSignature: String,    // real NFT transfer to escrow tx
+  paymentTxSignature: String,         // citizen SOL fee tx (proof of payment)
+  lroProposalTxSignature: String,    // Land Revenue Officer SOL fee tx when proposing (0.05 SOL)
+  adminPaymentTxSignature: String,   // Chief Land Revenue Officer SOL fee tx when approve/reject (0.08 SOL)
+  nftTransferSignature: String,      // real NFT transfer to escrow tx
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -111,6 +118,48 @@ app.get('/api/parcels/:id', async (req, res) => {
   }
 });
 
+// Get the three Solana tx signatures for a parcel (from approved registration whitelist). Backfills parcel if missing.
+app.get('/api/parcels/:id/registration-proof', async (req, res) => {
+  try {
+    const parcel = await Parcel.findById(req.params.id);
+    if (!parcel) return res.status(404).json({ error: 'Parcel not found' });
+    const hasAll = parcel.citizenTxSignature && parcel.lroProposalTxSignature && parcel.clroDecisionTxSignature;
+    if (hasAll) {
+      return res.json({
+        citizenTxSignature: parcel.citizenTxSignature,
+        lroProposalTxSignature: parcel.lroProposalTxSignature,
+        clroDecisionTxSignature: parcel.clroDecisionTxSignature
+      });
+    }
+    const approved = await Whitelist.findOne({
+      status: 'approved',
+      requestType: 'registration',
+      walletAddress: parcel.ownerWallet,
+      ownerName: parcel.ownerName
+    }).sort({ createdAt: -1 });
+    if (!approved) {
+      return res.json({
+        citizenTxSignature: parcel.citizenTxSignature || null,
+        lroProposalTxSignature: parcel.lroProposalTxSignature || null,
+        clroDecisionTxSignature: parcel.clroDecisionTxSignature || null
+      });
+    }
+    const citizenTxSignature = parcel.citizenTxSignature || approved.paymentTxSignature || null;
+    const lroProposalTxSignature = parcel.lroProposalTxSignature || approved.lroProposalTxSignature || null;
+    const clroDecisionTxSignature = parcel.clroDecisionTxSignature || approved.adminPaymentTxSignature || null;
+    if (!parcel.citizenTxSignature || !parcel.lroProposalTxSignature || !parcel.clroDecisionTxSignature) {
+      await Parcel.findByIdAndUpdate(req.params.id, {
+        citizenTxSignature: citizenTxSignature || parcel.citizenTxSignature,
+        lroProposalTxSignature: lroProposalTxSignature || parcel.lroProposalTxSignature,
+        clroDecisionTxSignature: clroDecisionTxSignature || parcel.clroDecisionTxSignature
+      });
+    }
+    res.json({ citizenTxSignature, lroProposalTxSignature, clroDecisionTxSignature });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/parcels/owner/:wallet', async (req, res) => {
   try {
     const parcels = await Parcel.find({ ownerWallet: req.params.wallet }).sort({ createdAt: -1 });
@@ -123,7 +172,8 @@ app.get('/api/parcels/owner/:wallet', async (req, res) => {
 app.get('/api/fee-config', (req, res) => {
   res.json({
     citizenFeeSol: FEE_CITIZEN_SOL,
-    adminFeeSol: FEE_ADMIN_SOL,
+    lroFeeSol: FEE_LRO_SOL,
+    clroFeeSol: FEE_CLRO_SOL,
     treasuryWallet: TREASURY_WALLET,
     solanaConfigured: solana.isConfigured
   });
@@ -226,11 +276,43 @@ app.post('/api/whitelist', async (req, res) => {
   }
 });
 
+// Land Revenue Officer: propose (move pending → proposed). Pays 0.05 SOL.
+app.put('/api/whitelist/:id/propose', async (req, res) => {
+  try {
+    const { paymentTxSignature } = req.body;
+    if (!paymentTxSignature) {
+      return res.status(400).json({ error: 'LRO payment required. Send SOL fee first and include paymentTxSignature.' });
+    }
+    const existing = await Whitelist.findById(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Request not found' });
+    if (existing.status !== 'pending') {
+      return res.status(400).json({ error: 'Only pending requests can be proposed.' });
+    }
+    const request = await Whitelist.findByIdAndUpdate(
+      req.params.id,
+      { status: 'proposed', lroProposalTxSignature: paymentTxSignature },
+      { new: true }
+    );
+    res.json(request);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Chief Land Revenue Officer: approve or reject (proposed → approved/rejected). Pays 0.08 SOL.
 app.put('/api/whitelist/:id', async (req, res) => {
   try {
     const { status, paymentTxSignature } = req.body;
-    if (!paymentTxSignature) {
-      return res.status(400).json({ error: 'Admin payment required. Send SOL fee first and include paymentTxSignature.' });
+    if (!status || !paymentTxSignature) {
+      return res.status(400).json({ error: 'CLRO payment required. Send SOL fee first and include status and paymentTxSignature.' });
+    }
+    if (status !== 'approved' && status !== 'rejected') {
+      return res.status(400).json({ error: 'Status must be approved or rejected.' });
+    }
+    const existing = await Whitelist.findById(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Request not found' });
+    if (existing.status !== 'proposed') {
+      return res.status(400).json({ error: 'Only proposed requests can be approved or rejected.' });
     }
     const request = await Whitelist.findByIdAndUpdate(
       req.params.id,
@@ -267,7 +349,10 @@ app.put('/api/whitelist/:id', async (req, res) => {
         documentHash: 'Qm' + Date.now(),
         transactionHash: mintSig || regTxHash,
         mintAddress: mintAddr || undefined,
-        status: 'registered'
+        status: 'registered',
+        citizenTxSignature: request.paymentTxSignature || undefined,
+        lroProposalTxSignature: request.lroProposalTxSignature || undefined,
+        clroDecisionTxSignature: request.adminPaymentTxSignature || undefined
       });
       await newParcel.save();
     }
@@ -323,11 +408,19 @@ app.put('/api/whitelist/:id', async (req, res) => {
 app.get('/api/stats', async (req, res) => {
   try {
     const totalParcels = await Parcel.countDocuments();
-    const pendingWhitelist = await Whitelist.countDocuments({ status: 'pending', requestType: 'whitelist' });
+    const pendingCount = await Whitelist.countDocuments({ status: 'pending' });
+    const proposedCount = await Whitelist.countDocuments({ status: 'proposed' });
     const pendingRegistrations = await Whitelist.countDocuments({ status: 'pending', requestType: 'registration' });
     const pendingTransfers = await Whitelist.countDocuments({ status: 'pending', requestType: 'transfer' });
     const approvedWhitelist = await Whitelist.countDocuments({ status: 'approved' });
-    res.json({ totalParcels, pendingWhitelist, pendingRegistrations, pendingTransfers, approvedWhitelist });
+    res.json({
+      totalParcels,
+      pendingRegistrations,
+      pendingTransfers,
+      pendingCount,
+      proposedCount,
+      approvedWhitelist
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -420,7 +513,9 @@ const seedData = async () => {
   }
 };
 
-seedData();
+if (ENABLE_DEMO_SEED) {
+  seedData();
+}
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

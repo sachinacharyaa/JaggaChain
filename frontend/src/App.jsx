@@ -26,7 +26,13 @@ import {
 } from 'lucide-react'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-const ADMIN_WALLETS = (import.meta.env.VITE_ADMIN_WALLETS || '8b29vHx8ZdAQp9vNSLSgmNxeqgPZbyqE6paPdwVvXYSB').split(',').map((w) => w.trim())
+// Assigned wallets – exactly one role per wallet (CLRO checked first so one wallet = one role)
+// Wallet A Citizen (नागरिक) Sachin Acharya
+const WALLET_CITIZEN = 'G6DKYcQnySUk1ZYYuR1HMovVscWjAtyDQb6GhqrvJYnw'
+// Wallet B Land Revenue Officer (मालपोत अधिकृत) Hari Prasad Shah
+const WALLET_LRO = (import.meta.env.VITE_WALLET_LRO || 'sDHAt4Sfn556SXvKddXjCwAeKaMpLHEKKWcfG7hfmoz').trim()
+// Wallet C Chief Land Revenue Officer (प्रमुख मालपोत अधिकृत) Gagan Sher Shah
+const WALLET_CLRO = (import.meta.env.VITE_WALLET_CLRO || '8b29vHx8ZdAQp9vNSLSgmNxeqgPZbyqE6paPdwVvXYSB').trim()
 
 const NepalFlag = () => (
   <svg viewBox="0 0 25 21" className="flag-wave h-9 w-auto" xmlns="http://www.w3.org/2000/svg">
@@ -54,9 +60,18 @@ const JaggaChainLogo = ({ className = 'h-32 w-auto' }) => (
 function App() {
   const { publicKey, connected, signTransaction } = useWallet()
   const walletAddress = publicKey?.toBase58() || null
-  const isAdmin = useMemo(() => walletAddress && ADMIN_WALLETS.includes(walletAddress), [walletAddress])
+  // One role per wallet: CLRO first, then LRO, then Citizen (so env mix-up can't show wrong role)
+  const isCLRO = useMemo(() => Boolean(walletAddress && walletAddress === WALLET_CLRO), [walletAddress])
+  const isLRO = useMemo(() => Boolean(walletAddress && walletAddress === WALLET_LRO && !isCLRO), [walletAddress, isCLRO])
+  const isCitizen = useMemo(() => Boolean(walletAddress && !isCLRO && !isLRO), [walletAddress, isCLRO, isLRO])
 
-  const [feeConfig, setFeeConfig] = useState({ citizenFeeSol: 0, adminFeeSol: 0, treasuryWallet: '', solanaConfigured: true })
+  const [feeConfig, setFeeConfig] = useState({
+    citizenFeeSol: 0.02,
+    lroFeeSol: 0.05,
+    clroFeeSol: 0.08,
+    treasuryWallet: '',
+    solanaConfigured: true
+  })
 
   const [activeTab, setActiveTab] = useState('landing')
   const [parcels, setParcels] = useState([])
@@ -66,6 +81,8 @@ function App() {
   const [searched, setSearched] = useState(false)
   const [showRegisterModal, setShowRegisterModal] = useState(false)
   const [showTransferModal, setShowTransferModal] = useState(false)
+  const [selectedParcelDetail, setSelectedParcelDetail] = useState(null)
+  const [parcelRegistrationProof, setParcelRegistrationProof] = useState(null)
   const [txLoading, setTxLoading] = useState(null)
   const [expandedRequestId, setExpandedRequestId] = useState(null)
   const [registerForm, setRegisterForm] = useState({
@@ -95,8 +112,9 @@ function App() {
     fetch(`${API_BASE}/api/fee-config`)
       .then((r) => r.json())
       .then((d) => setFeeConfig({
-        citizenFeeSol: d.citizenFeeSol ?? 0.01,
-        adminFeeSol: d.adminFeeSol ?? 0.005,
+        citizenFeeSol: d.citizenFeeSol ?? 0.02,
+        lroFeeSol: d.lroFeeSol ?? 0.05,
+        clroFeeSol: d.clroFeeSol ?? 0.08,
         treasuryWallet: d.treasuryWallet || '',
         solanaConfigured: d.solanaConfigured !== false
       }))
@@ -244,13 +262,28 @@ function App() {
 
   useEffect(() => {
     if (connected && walletAddress) {
-      if (isAdmin) fetchWhitelist()
-      else {
+      if (isLRO || isCLRO) fetchWhitelist()
+      if (isCitizen) {
         fetchParcelsByOwner(walletAddress)
         fetchWhitelist()
       }
     }
-  }, [connected, walletAddress, isAdmin])
+  }, [connected, walletAddress, isLRO, isCLRO, isCitizen])
+
+  useEffect(() => {
+    if (!selectedParcelDetail?._id) {
+      setParcelRegistrationProof(null)
+      return
+    }
+    let cancelled = false
+    fetch(`${API_BASE}/api/parcels/${selectedParcelDetail._id}/registration-proof`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled) setParcelRegistrationProof(data)
+      })
+      .catch(() => { if (!cancelled) setParcelRegistrationProof(null) })
+    return () => { cancelled = true }
+  }, [selectedParcelDetail?._id])
 
   const fetchParcels = async () => {
     try {
@@ -309,10 +342,11 @@ function App() {
     }
   }
 
+  // Chief Land Revenue Officer: approve or reject (0.08 SOL)
   const handleWhitelistAction = async (id, status) => {
     setTxLoading(id)
     try {
-      const paymentTxSignature = await payFeeSol(feeConfig.adminFeeSol)
+      const paymentTxSignature = await payFeeSol(feeConfig.clroFeeSol)
       const res = await fetch(`${API_BASE}/api/whitelist/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -321,7 +355,7 @@ function App() {
       if (res.ok) {
         await fetchWhitelist()
         await fetchStats()
-        if (walletAddress && !isAdmin) fetchParcelsByOwner(walletAddress)
+        if (walletAddress && isCitizen) fetchParcelsByOwner(walletAddress)
         showNotification(status === 'approved' ? 'Request approved. Recorded on Solana.' : 'Request rejected. Recorded on Solana.', 'success')
       } else {
         const data = await res.json().catch(() => ({}))
@@ -329,6 +363,31 @@ function App() {
       }
     } catch (err) {
       console.error('Failed to update whitelist:', err)
+      showNotification(paymentErrorMessage(err), 'error')
+    }
+    setTxLoading(null)
+  }
+
+  // Land Revenue Officer: propose (0.05 SOL) – moves pending → proposed
+  const handlePropose = async (id) => {
+    setTxLoading(id)
+    try {
+      const paymentTxSignature = await payFeeSol(feeConfig.lroFeeSol)
+      const res = await fetch(`${API_BASE}/api/whitelist/${id}/propose`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentTxSignature }),
+      })
+      if (res.ok) {
+        await fetchWhitelist()
+        await fetchStats()
+        showNotification('Proposal submitted. Record forwarded to Chief Land Revenue Officer.', 'success')
+      } else {
+        const data = await res.json().catch(() => ({}))
+        showNotification(data.error || 'Proposal failed', 'error')
+      }
+    } catch (err) {
+      console.error('Failed to propose:', err)
       showNotification(paymentErrorMessage(err), 'error')
     }
     setTxLoading(null)
@@ -439,6 +498,8 @@ function App() {
     return parts.length ? parts.join(', ') : '0 Dhur'
   }
 
+  const pendingRequests = whitelist.filter((w) => w.status === 'pending')
+  const proposedRequests = whitelist.filter((w) => w.status === 'proposed')
   const registrationRequests = whitelist.filter((w) => w.status === 'pending' && w.requestType === 'registration')
   const transferRequests = whitelist.filter((w) => w.status === 'pending' && w.requestType === 'transfer')
   const myRequests = walletAddress
@@ -754,7 +815,8 @@ function App() {
   const canAccessTab = (tab) => {
     if (tab === 'explorer') return true
     if (!connected) return false
-    if (tab === 'government') return isAdmin
+    if (tab === 'government') return isLRO || isCLRO
+    if (tab === 'parcels') return isCitizen
     return true
   }
 
@@ -799,6 +861,7 @@ function App() {
                     <Globe className="w-4 h-4" /> Public Records
                     {activeTab === 'explorer' && <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-t-full" />}
                   </button>
+                  {isCitizen && (
                   <button
                     onClick={() => { if (!connected) setActiveTab('parcels'); else { setActiveTab('parcels'); fetchParcelsByOwner(walletAddress) } }}
                     className={`flex items-center gap-2 px-5 py-2.5 text-sm md:text-base font-semibold transition-all relative ${activeTab === 'parcels' ? 'text-primary' : 'text-slate-400 hover:text-slate-600'}`}
@@ -806,11 +869,12 @@ function App() {
                     <LayoutDashboard className="w-4 h-4" /> PORTAL
                     {activeTab === 'parcels' && <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-t-full" />}
                   </button>
-                  {isAdmin && (
-                    <button
-                      onClick={() => { setActiveTab('government'); fetchWhitelist() }}
-                      className={`flex items-center gap-2 px-5 py-2.5 text-sm md:text-base font-semibold transition-all relative ${activeTab === 'government' ? 'text-accent-crimson' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
+                  )}
+                    {(isLRO || isCLRO) && (
+                      <button
+                        onClick={() => { setActiveTab('government'); fetchWhitelist(); fetchStats() }}
+                        className={`flex items-center gap-2 px-5 py-2.5 text-sm md:text-base font-semibold transition-all relative ${activeTab === 'government' ? 'text-accent-crimson' : 'text-slate-400 hover:text-slate-600'}`}
+                      >
                       <Landmark className="w-4 h-4" /> ADMIN
                       {activeTab === 'government' && <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent-crimson rounded-t-full" />}
                     </button>
@@ -821,8 +885,8 @@ function App() {
                     <div className="flex items-center gap-3">
                       <span className="hidden sm:block text-right">
                         <p className="text-xs md:text-sm font-mono text-slate-400">{truncateHash(walletAddress)}</p>
-                        <span className={`inline-flex items-center gap-1 text-[11px] md:text-xs font-bold uppercase tracking-wider ${isAdmin ? 'text-accent-crimson' : 'text-primary'}`}>
-                          {isAdmin ? <><Landmark className="w-4 h-4" /> Admin</> : <><User className="w-4 h-4" /> Citizen</>}
+                        <span className={`inline-flex items-center gap-1 text-[11px] md:text-xs font-bold uppercase tracking-wider ${isCLRO ? 'text-accent-crimson' : isLRO ? 'text-amber-600' : 'text-primary'}`}>
+                          {isCLRO ? <><Landmark className="w-4 h-4" /> प्रमुख मालपोत अधिकृत</> : isLRO ? <><Landmark className="w-4 h-4" /> मालपोत अधिकृत</> : <><User className="w-4 h-4" /> नागरिक</>}
                         </span>
                       </span>
                       <WalletMultiButton className="!bg-slate-50 !text-slate-800 !border !border-slate-200 !rounded-full !px-5 !py-2.5 !text-sm !font-bold hover:!bg-slate-100 !transition-all" />
@@ -875,7 +939,11 @@ function App() {
                     {parcels.map((parcel) => (
                       <div
                         key={parcel._id}
-                        className="premium-card rounded-2xl shadow-sm border border-slate-200 overflow-hidden card-hover animate-fadeIn"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setSelectedParcelDetail(parcel)}
+                        onKeyDown={(e) => e.key === 'Enter' && setSelectedParcelDetail(parcel)}
+                        className="premium-card rounded-2xl shadow-sm border border-slate-200 overflow-hidden card-hover animate-fadeIn cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30"
                       >
                         <div className="bg-slate-900 px-5 py-4">
                           <div className="flex justify-between items-center">
@@ -904,14 +972,7 @@ function App() {
                               <span className="text-slate-500">Size</span>
                               <span className="text-slate-700 font-medium">{formatSize(parcel.size)}</span>
                             </div>
-                            {parcel.transactionHash && (
-                              <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-1">
-                                <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-                                <span className="text-xs text-slate-400 font-mono break-all">
-                                  {truncateHash(parcel.transactionHash)}
-                                </span>
-                              </div>
-                            )}
+                            <p className="text-xs text-slate-400 mt-2">Click for full details & transactions</p>
                           </div>
                         </div>
                       </div>
@@ -1104,16 +1165,16 @@ function App() {
               </div>
             )}
 
-            {activeTab === 'government' && !isAdmin && connected && (
+            {activeTab === 'government' && !isLRO && !isCLRO && connected && (
               <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-16 text-center animate-fadeIn">
                 <Landmark className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-slate-800 mb-2">Admin access required</h2>
-                <p className="text-slate-500 mb-6">This area is only available to authorized government wallets.</p>
-                <button onClick={() => setActiveTab('explorer')} className="text-red-600 font-medium hover:underline">Go to Explorer</button>
+                <h2 className="text-xl font-semibold text-slate-800 mb-2">Government access required</h2>
+                <p className="text-slate-500 mb-6">This area is only available to Land Revenue Officer or Chief Land Revenue Officer wallets.</p>
+                <button onClick={() => setActiveTab('explorer')} className="text-red-600 font-medium hover:underline">Go to Public Records</button>
               </div>
             )}
 
-            {activeTab === 'government' && isAdmin && (
+            {activeTab === 'government' && (isLRO || isCLRO) && (
               <div className="animate-fadeIn">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                   <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-6 card-hover">
@@ -1127,42 +1188,48 @@ function App() {
                       </div>
                     </div>
                   </div>
+                  {isLRO && (
                   <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-6 card-hover">
                     <div className="flex items-center gap-4">
                       <div className="p-3 rounded-xl bg-amber-100">
                         <FileCheck className="w-8 h-8 text-amber-600" />
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-slate-800">{registrationRequests.length}</p>
-                        <p className="text-sm text-slate-500">Pending registrations</p>
+                        <p className="text-3xl font-bold text-slate-800">{pendingRequests.length}</p>
+                        <p className="text-sm text-slate-500">From citizens (pending)</p>
                       </div>
                     </div>
                   </div>
+                  )}
+                  {isCLRO && (
                   <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-6 card-hover">
                     <div className="flex items-center gap-4">
                       <div className="p-3 rounded-xl bg-blue-100">
                         <Zap className="w-8 h-8 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-slate-800">{transferRequests.length}</p>
-                        <p className="text-sm text-slate-500">Pending transfers</p>
+                        <p className="text-3xl font-bold text-slate-800">{proposedRequests.length}</p>
+                        <p className="text-sm text-slate-500">For approval (proposed)</p>
                       </div>
                     </div>
                   </div>
+                  )}
                 </div>
 
+                {/* Land Revenue Officer: records from citizens – Proposal (0.05 SOL) */}
+                {isLRO && (
                 <div className="premium-card rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-                  <div className="bg-slate-900 px-6 py-5 border-b border-white/10">
+                  <div className="bg-amber-900/90 px-6 py-5 border-b border-white/10">
                     <h2 className="text-lg font-black text-white flex items-center gap-2">
-                      <FileCheck className="w-5 h-5 text-primary" /> Registration requests
+                      <FileCheck className="w-5 h-5 text-amber-300" /> Records from citizens (मालपोत अधिकृत)
                     </h2>
-                    <p className="text-slate-400 text-sm mt-1">Review and approve or reject. Action will be recorded on Solana. {feeConfig.adminFeeSol > 0 ? `Fee: ${feeConfig.adminFeeSol} SOL.` : 'Network fee only.'}</p>
+                    <p className="text-slate-300 text-sm mt-1">Click Proposal to forward to Chief Land Revenue Officer. Wallet will open. Fee: {feeConfig.lroFeeSol} SOL.</p>
                   </div>
-                  {registrationRequests.length === 0 ? (
-                    <div className="p-8 text-center text-slate-500">No pending registration requests.</div>
+                  {pendingRequests.length === 0 ? (
+                    <div className="p-8 text-center text-slate-500">No pending records from citizens.</div>
                   ) : (
                     <div className="divide-y divide-slate-100">
-                      {registrationRequests.map((item) => (
+                      {pendingRequests.map((item) => (
                         <div key={item._id} className="overflow-hidden">
                           <div
                             className="p-6 flex flex-wrap items-center justify-between gap-4 hover:bg-slate-50 transition cursor-pointer"
@@ -1177,11 +1244,9 @@ function App() {
                               <div>
                                 <h3 className="font-semibold text-slate-800">{item.ownerName}</h3>
                                 <p className="text-sm text-slate-500 font-mono">{truncateHash(item.walletAddress)}</p>
-                                {item.location && (
-                                  <p className="text-sm text-slate-500">
-                                    {item.location.district}, {item.location.municipality}
-                                  </p>
-                                )}
+                                <span className="inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600">
+                                  {item.requestType === 'registration' ? 'Registration' : 'Transfer'}
+                                </span>
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
@@ -1190,26 +1255,12 @@ function App() {
                                   <Loader2 className="w-4 h-4 animate-spin" /> Processing
                                 </span>
                               ) : (
-                                <div className="flex gap-2">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      handleWhitelistAction(item._id, 'approved')
-                                    }}
-                                    className="flex items-center gap-1 px-4 py-2 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition text-sm"
-                                  >
-                                    <CheckCircle2 className="w-4 h-4" /> Approve
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      handleWhitelistAction(item._id, 'rejected')
-                                    }}
-                                    className="flex items-center gap-1 px-4 py-2 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition text-sm"
-                                  >
-                                    <XCircle className="w-4 h-4" /> Reject
-                                  </button>
-                                </div>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handlePropose(item._id) }}
+                                  className="flex items-center gap-1 px-4 py-2 bg-amber-600 text-white rounded-xl font-medium hover:bg-amber-700 transition text-sm"
+                                >
+                                  <Zap className="w-4 h-4" /> Proposal
+                                </button>
                               )}
                             </div>
                           </div>
@@ -1217,14 +1268,18 @@ function App() {
                             <div className="px-6 pb-6 pt-0 animate-fadeIn">
                               <div className="rounded-xl bg-slate-50 border border-slate-100 p-5 text-sm space-y-3">
                                 <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-                                  <div><span className="text-slate-500">Owner name</span><br /><span className="font-medium text-slate-800">{item.ownerName}</span></div>
+                                  <div><span className="text-slate-500">Owner</span><br /><span className="font-medium text-slate-800">{item.ownerName}</span></div>
                                   <div><span className="text-slate-500">Wallet</span><br /><span className="font-mono text-slate-800 break-all">{item.walletAddress}</span></div>
                                   <div><span className="text-slate-500">District</span><br /><span className="text-slate-800">{item.location?.district}</span></div>
                                   <div><span className="text-slate-500">Municipality</span><br /><span className="text-slate-800">{item.location?.municipality}</span></div>
-                                  <div><span className="text-slate-500">Ward</span><br /><span className="text-slate-800">{item.location?.ward}</span></div>
-                                  <div><span className="text-slate-500">Tole</span><br /><span className="text-slate-800">{item.location?.tole}</span></div>
+                                  <div><span className="text-slate-500">Ward / Tole</span><br /><span className="text-slate-800">{item.location?.ward} / {item.location?.tole}</span></div>
                                   <div><span className="text-slate-500">Size</span><br /><span className="text-slate-800">{formatSize(item.size)}</span></div>
-                                  <div><span className="text-slate-500">Submitted</span><br /><span className="text-slate-800">{new Date(item.createdAt).toLocaleString()}</span></div>
+                                  {item.requestType === 'transfer' && (
+                                    <>
+                                      <div><span className="text-slate-500">To (name)</span><br /><span className="text-slate-800">{item.toName}</span></div>
+                                      <div><span className="text-slate-500">To (wallet)</span><br /><span className="font-mono text-slate-800 break-all">{item.toWallet}</span></div>
+                                    </>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -1234,19 +1289,22 @@ function App() {
                     </div>
                   )}
                 </div>
+                )}
 
+                {/* Chief Land Revenue Officer: proposed records – Approve / Reject (0.08 SOL) */}
+                {isCLRO && (
                 <div className="premium-card rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                   <div className="bg-slate-900 px-6 py-5 border-b border-white/10">
                     <h2 className="text-lg font-black text-white flex items-center gap-2">
-                      <Zap className="w-5 h-5 text-accent-crimson" /> Transfer requests
+                      <Landmark className="w-5 h-5 text-primary" /> Records for approval (प्रमुख मालपोत अधिकृत)
                     </h2>
-                    <p className="text-slate-400 text-sm mt-1">Action will be recorded on Solana. {feeConfig.adminFeeSol > 0 ? `Fee: ${feeConfig.adminFeeSol} SOL.` : 'Network fee only.'}</p>
+                    <p className="text-slate-400 text-sm mt-1">Approve or reject. Wallet will open. Fee: {feeConfig.clroFeeSol} SOL per action.</p>
                   </div>
-                  {transferRequests.length === 0 ? (
-                    <div className="p-8 text-center text-slate-500">No pending transfer requests.</div>
+                  {proposedRequests.length === 0 ? (
+                    <div className="p-8 text-center text-slate-500">No proposed records for approval.</div>
                   ) : (
                     <div className="divide-y divide-slate-100">
-                      {transferRequests.map((item) => (
+                      {proposedRequests.map((item) => (
                         <div key={item._id} className="overflow-hidden">
                           <div
                             className="p-6 flex flex-wrap items-center justify-between gap-4 hover:bg-slate-50 transition cursor-pointer"
@@ -1261,8 +1319,11 @@ function App() {
                               <div>
                                 <h3 className="font-semibold text-slate-800">{item.ownerName || 'Transfer'}</h3>
                                 <p className="text-sm text-slate-500 font-mono">From: {truncateHash(item.walletAddress)}</p>
+                                <span className="inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600">
+                                  {item.requestType === 'registration' ? 'Registration' : 'Transfer'}
+                                </span>
                                 {item.toName && (
-                                  <p className="text-sm text-slate-500">
+                                  <p className="text-sm text-slate-500 mt-0.5">
                                     To: {item.toName} ({truncateHash(item.toWallet)})
                                   </p>
                                 )}
@@ -1301,11 +1362,22 @@ function App() {
                             <div className="px-6 pb-6 pt-0 animate-fadeIn">
                               <div className="rounded-xl bg-slate-50 border border-slate-100 p-5 text-sm space-y-3">
                                 <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-                                  <div><span className="text-slate-500">From (owner)</span><br /><span className="font-medium text-slate-800">{item.ownerName}</span></div>
-                                  <div><span className="text-slate-500">From wallet</span><br /><span className="font-mono text-slate-800 break-all">{item.walletAddress}</span></div>
-                                  <div><span className="text-slate-500">To (recipient)</span><br /><span className="text-slate-800">{item.toName}</span></div>
-                                  <div><span className="text-slate-500">To wallet</span><br /><span className="font-mono text-slate-800 break-all">{item.toWallet}</span></div>
-                                  <div><span className="text-slate-500">Parcel ID</span><br /><span className="font-mono text-slate-800">{item.parcelId}</span></div>
+                                  <div><span className="text-slate-500">Owner</span><br /><span className="font-medium text-slate-800">{item.ownerName}</span></div>
+                                  <div><span className="text-slate-500">Wallet</span><br /><span className="font-mono text-slate-800 break-all">{item.walletAddress}</span></div>
+                                  {item.requestType === 'registration' ? (
+                                    <>
+                                      <div><span className="text-slate-500">District</span><br /><span className="text-slate-800">{item.location?.district}</span></div>
+                                      <div><span className="text-slate-500">Municipality</span><br /><span className="text-slate-800">{item.location?.municipality}</span></div>
+                                      <div><span className="text-slate-500">Ward / Tole</span><br /><span className="text-slate-800">{item.location?.ward} / {item.location?.tole}</span></div>
+                                      <div><span className="text-slate-500">Size</span><br /><span className="text-slate-800">{formatSize(item.size)}</span></div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <div><span className="text-slate-500">To (recipient)</span><br /><span className="text-slate-800">{item.toName}</span></div>
+                                      <div><span className="text-slate-500">To wallet</span><br /><span className="font-mono text-slate-800 break-all">{item.toWallet}</span></div>
+                                      <div><span className="text-slate-500">Parcel ID</span><br /><span className="font-mono text-slate-800">{item.parcelId}</span></div>
+                                    </>
+                                  )}
                                   <div><span className="text-slate-500">Submitted</span><br /><span className="text-slate-800">{new Date(item.createdAt).toLocaleString()}</span></div>
                                   {item.paymentTxSignature && (
                                     <div className="col-span-2">
@@ -1332,10 +1404,102 @@ function App() {
                     </div>
                   )}
                 </div>
+                )}
               </div>
             )}
           </main>
         </>
+      )}
+
+      {selectedParcelDetail && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedParcelDetail(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-primary" /> Record #{selectedParcelDetail.tokenId} – Full details
+              </h2>
+              <button
+                type="button"
+                onClick={() => setSelectedParcelDetail(null)}
+                className="p-2 rounded-lg hover:bg-slate-100 text-slate-500"
+                aria-label="Close"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-6">
+              <div className="rounded-xl bg-slate-50 border border-slate-100 p-4">
+                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Parcel details</h3>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                  <div><span className="text-slate-500">Token ID</span><br /><span className="font-semibold text-slate-800">#{selectedParcelDetail.tokenId}</span></div>
+                  <div><span className="text-slate-500">Status</span><br /><span className="font-semibold text-slate-800">{selectedParcelDetail.status || 'registered'}</span></div>
+                  <div className="col-span-2"><span className="text-slate-500">Owner name</span><br /><span className="font-semibold text-slate-800">{selectedParcelDetail.ownerName}</span></div>
+                  <div className="col-span-2"><span className="text-slate-500">Owner wallet</span><br /><span className="font-mono text-slate-800 break-all">{selectedParcelDetail.ownerWallet}</span></div>
+                  <div><span className="text-slate-500">Province</span><br /><span className="text-slate-800">{selectedParcelDetail.location?.province || '—'}</span></div>
+                  <div><span className="text-slate-500">District</span><br /><span className="text-slate-800">{selectedParcelDetail.location?.district || '—'}</span></div>
+                  <div><span className="text-slate-500">Municipality</span><br /><span className="text-slate-800">{selectedParcelDetail.location?.municipality || '—'}</span></div>
+                  <div><span className="text-slate-500">Ward / Tole</span><br /><span className="text-slate-800">Ward {selectedParcelDetail.location?.ward ?? '—'}, {selectedParcelDetail.location?.tole || '—'}</span></div>
+                  <div><span className="text-slate-500">Size</span><br /><span className="text-slate-800 font-medium">{formatSize(selectedParcelDetail.size)}</span></div>
+                  {selectedParcelDetail.mintAddress && <div><span className="text-slate-500">Mint (NFT)</span><br /><span className="font-mono text-xs text-slate-600 break-all">{selectedParcelDetail.mintAddress}</span></div>}
+                  {selectedParcelDetail.documentHash && <div><span className="text-slate-500">Document hash</span><br /><span className="font-mono text-xs text-slate-600 break-all">{selectedParcelDetail.documentHash}</span></div>}
+                  <div><span className="text-slate-500">Created</span><br /><span className="text-slate-800">{selectedParcelDetail.createdAt ? new Date(selectedParcelDetail.createdAt).toLocaleString() : '—'}</span></div>
+                  <div><span className="text-slate-500">Updated</span><br /><span className="text-slate-800">{selectedParcelDetail.updatedAt ? new Date(selectedParcelDetail.updatedAt).toLocaleString() : '—'}</span></div>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 overflow-hidden">
+                <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider px-4 py-3 bg-slate-50 border-b border-slate-100">Three transactions</h3>
+                <div className="divide-y divide-slate-100">
+                  <div className="p-4">
+                    <p className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">User transaction (नागरिक - CITIZEN)</p>
+                    {(() => {
+                      const sig = selectedParcelDetail.citizenTxSignature ?? parcelRegistrationProof?.citizenTxSignature
+                      return sig && !String(sig).startsWith('dev-') ? (
+                        <a href={`https://explorer.solana.com/tx/${sig}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="font-mono text-sm text-primary hover:underline inline-flex items-center gap-1 break-all">
+                          {truncateHash(sig)} <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                        </a>
+                      ) : (
+                        <span className="text-slate-400 text-sm">— Not recorded</span>
+                      )
+                    })()}
+                  </div>
+                  <div className="p-4">
+                    <p className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Malpot officer transaction (मालपोत अधिकृत - LAND REVENUE OFFICER)</p>
+                    {(() => {
+                      const sig = selectedParcelDetail.lroProposalTxSignature ?? parcelRegistrationProof?.lroProposalTxSignature
+                      return sig && !String(sig).startsWith('dev-') ? (
+                        <a href={`https://explorer.solana.com/tx/${sig}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="font-mono text-sm text-amber-600 hover:underline inline-flex items-center gap-1 break-all">
+                          {truncateHash(sig)} <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                        </a>
+                      ) : (
+                        <span className="text-slate-400 text-sm">— Not recorded</span>
+                      )
+                    })()}
+                  </div>
+                  <div className="p-4">
+                    <p className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Chief officer transaction (प्रमुख मालपोत अधिकृत - CHIEF LAND REVENUE OFFICER)</p>
+                    {(() => {
+                      const sig = selectedParcelDetail.clroDecisionTxSignature ?? parcelRegistrationProof?.clroDecisionTxSignature
+                      return sig && !String(sig).startsWith('dev-') ? (
+                        <a href={`https://explorer.solana.com/tx/${sig}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="font-mono text-sm text-accent-crimson hover:underline inline-flex items-center gap-1 break-all">
+                          {truncateHash(sig)} <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                        </a>
+                      ) : (
+                        <span className="text-slate-400 text-sm">— Not recorded</span>
+                      )
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {showRegisterModal && (
