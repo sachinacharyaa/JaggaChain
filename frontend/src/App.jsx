@@ -912,7 +912,7 @@ function App() {
                         onClick={() => { setActiveTab('government'); fetchWhitelist(); fetchStats() }}
                         className={`flex items-center gap-2 px-5 py-2.5 text-sm md:text-base font-semibold transition-all relative ${activeTab === 'government' ? 'text-accent-crimson' : 'text-slate-400 hover:text-slate-600'}`}
                       >
-                      <Landmark className="w-4 h-4" /> ADMIN
+                      <Landmark className="w-4 h-4" /> {isLRO ? 'OFFICER' : 'ADMIN'}
                       {activeTab === 'government' && <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent-crimson rounded-t-full" />}
                     </button>
                   )}
