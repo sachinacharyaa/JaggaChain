@@ -1,6 +1,7 @@
 # JaggaChain
 
-**A land registry DApp on Solana.** Citizens register land and request transfers; government officers (Land Revenue Officer and Chief Land Revenue Officer) approve step by step. Every step is recorded on Solana so ownership is transparent and verifiable.
+**A land registry DApp on Solana.** 
+Citizens register land and request transfers; government officers (Land Revenue Officer and Chief Land Revenue Officer) approve step by step. Every step is recorded on Solana so ownership is transparent and verifiable.
 
 ---
 
