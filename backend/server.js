@@ -55,6 +55,7 @@ const whitelistSchema = new mongoose.Schema({
   requestType: { type: String, default: 'whitelist' },
   status: { type: String, default: 'pending' },
   location: {
+    province: String,
     district: String,
     municipality: String,
     ward: Number,
@@ -97,6 +98,7 @@ app.get('/api/parcels/search', async (req, res) => {
     const parcels = await Parcel.find({
       $or: [
         { ownerName: regex },
+        { 'location.province': regex },
         { 'location.district': regex },
         { 'location.municipality': regex },
         { 'location.tole': regex }

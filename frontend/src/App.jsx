@@ -57,6 +57,28 @@ const JaggaChainLogo = ({ className = 'h-32 w-auto' }) => (
   />
 )
 
+// Nepal 7 provinces (2015 constitution)
+const NEPAL_PROVINCES = [
+  'Koshi',
+  'Madhesh',
+  'Bagmati',
+  'Gandaki',
+  'Lumbini',
+  'Karnali',
+  'Sudurpashchim'
+]
+
+// Districts by province (77 districts)
+const NEPAL_DISTRICTS_BY_PROVINCE = {
+  Koshi: ['Bhojpur', 'Dhankuta', 'Ilam', 'Jhapa', 'Khotang', 'Morang', 'Okhaldhunga', 'Panchthar', 'Sankhuwasabha', 'Solukhumbu', 'Sunsari', 'Taplejung', 'Tehrathum', 'Udayapur'],
+  Madhesh: ['Parsa', 'Bara', 'Rautahat', 'Sarlahi', 'Mahottari', 'Dhanusha', 'Siraha', 'Saptari'],
+  Bagmati: ['Sindhuli', 'Ramechhap', 'Dolakha', 'Bhaktapur', 'Dhading', 'Kathmandu', 'Kavrepalanchok', 'Lalitpur', 'Nuwakot', 'Rasuwa', 'Sindhupalchok', 'Chitwan', 'Makwanpur'],
+  Gandaki: ['Baglung', 'Gorkha', 'Kaski', 'Lamjung', 'Manang', 'Mustang', 'Myagdi', 'Nawalpur', 'Parbat', 'Syangja', 'Tanahun'],
+  Lumbini: ['Kapilvastu', 'Parasi', 'Rupandehi', 'Arghakhanchi', 'Gulmi', 'Palpa', 'Dang', 'Pyuthan', 'Rolpa', 'Eastern Rukum', 'Banke', 'Bardiya'],
+  Karnali: ['Western Rukum', 'Salyan', 'Dolpa', 'Humla', 'Jumla', 'Kalikot', 'Mugu', 'Surkhet', 'Dailekh', 'Jajarkot'],
+  Sudurpashchim: ['Kailali', 'Achham', 'Doti', 'Bajhang', 'Bajura', 'Kanchanpur', 'Dadeldhura', 'Baitadi', 'Darchula']
+}
+
 function App() {
   const { publicKey, connected, signTransaction } = useWallet()
   const walletAddress = publicKey?.toBase58() || null
@@ -87,6 +109,7 @@ function App() {
   const [expandedRequestId, setExpandedRequestId] = useState(null)
   const [registerForm, setRegisterForm] = useState({
     ownerName: '',
+    province: '',
     district: '',
     municipality: '',
     ward: '',
@@ -95,6 +118,8 @@ function App() {
     kattha: '',
     dhur: '',
   })
+  const [districtSearch, setDistrictSearch] = useState('')
+  const [districtDropdownOpen, setDistrictDropdownOpen] = useState(false)
   const [transferForm, setTransferForm] = useState({
     parcelId: '',
     toWallet: '',
@@ -169,7 +194,7 @@ function App() {
     return signature
   }
 
-  /** Pay registration fee and record details in one tx. Wallet will open to confirm Ã¢â‚¬â€ that's your Solana proof. */
+  /** Pay registration fee and record details in one tx. Wallet will open to confirm — that's your Solana proof. */
   const payRegistrationTx = async (lamports, payload) => {
     if (!connected || !publicKey) throw new Error('Connect your wallet first.')
     const toPubkey = feeConfig.treasuryWallet || publicKey.toBase58()
@@ -396,10 +421,19 @@ function App() {
   const handleRegistration = async (e) => {
     e.preventDefault()
     if (!walletAddress) return
+    if (registerForm.province && !registerForm.district) {
+      showNotification('Please select a district from the list.', 'error')
+      return
+    }
+    if (registerForm.province && NEPAL_DISTRICTS_BY_PROVINCE[registerForm.province] && !NEPAL_DISTRICTS_BY_PROVINCE[registerForm.province].includes(registerForm.district)) {
+      showNotification('Please select a valid district for the chosen province.', 'error')
+      return
+    }
     setTxLoading('registering')
     try {
       const payload = {
         ownerName: registerForm.ownerName,
+        province: registerForm.province,
         district: registerForm.district,
         municipality: registerForm.municipality,
         ward: registerForm.ward,
@@ -416,6 +450,7 @@ function App() {
           ownerName: registerForm.ownerName,
           requestType: 'registration',
           location: {
+            province: registerForm.province,
             district: registerForm.district,
             municipality: registerForm.municipality,
             ward: registerForm.ward,
@@ -431,7 +466,9 @@ function App() {
       })
       await fetchWhitelist()
       setShowRegisterModal(false)
-      setRegisterForm({ ownerName: '', district: '', municipality: '', ward: '', tole: '', bigha: '', kattha: '', dhur: '' })
+      setRegisterForm({ ownerName: '', province: '', district: '', municipality: '', ward: '', tole: '', bigha: '', kattha: '', dhur: '' })
+      setDistrictSearch('')
+      setDistrictDropdownOpen(false)
       showNotification('Registration submitted. Pending government approval. You will see it in My requests and in Active once approved.', 'success')
     } catch (err) {
       console.error('Failed to submit registration:', err)
@@ -490,7 +527,7 @@ function App() {
   const truncateHash = (hash) => (hash ? hash.slice(0, 8) + '...' + hash.slice(-8) : '-')
 
   const formatSize = (size) => {
-    if (!size) return 'Ã¢â‚¬â€'
+    if (!size) return '—'
     const parts = []
     if (size.bigha) parts.push(`${size.bigha} Bigha`)
     if (size.kattha) parts.push(`${size.kattha} Kattha`)
@@ -567,7 +604,7 @@ function App() {
                 </div>
               </div>
 
-              {/* Visual Side Ã¢â‚¬â€œ Nepal typography tile */}
+              {/* Visual Side – Nepal typography tile */}
               <div className="relative z-10 flex justify-end animate-fadeInUp animate-delay-200">
                 <div className="relative rounded-3xl overflow-hidden border border-white/20 shadow-2xl w-[360px] sm:w-[380px] lg:w-[400px] aspect-[4/5] bg-slate-900">
                   <div className="absolute inset-0 bg-gradient-to-tr from-primary/40 to-accent-crimson/20 z-10"></div>
@@ -640,7 +677,7 @@ function App() {
                 { icon: Shield, title: 'Immutable NFT Titles', desc: 'Your land, your token. Every property is minted as a unique NFT, ensuring non-fungible security on the global ledger.' },
                 { icon: CheckCircle2, title: 'Instant Verification', desc: 'Zero-knowledge proofs allow for immediate ownership validation without exposing sensitive personal data.' },
                 { icon: Landmark, title: 'Transparent Audit Logs', desc: 'Every change, transfer, and lien is recorded forever on the blockchain, creating an unalterable history.' },
-                { icon: Zap, title: 'High-Speed Processing', desc: 'Leveraging SolanaÃ¢â‚¬â„¢s 65k+ TPS architecture for near-instant settlement and minimal transaction fees.' },
+                { icon: Zap, title: 'High-Speed Processing', desc: "Leveraging Solana's 65k+ TPS architecture for near-instant settlement and minimal transaction fees." },
               ].map((item, i) => (
                 <div key={i} className={`landing-pillar-card landing-pillar-tone-${i + 1} p-8 rounded-2xl border transition-all group shadow-sm border-slate-200/60 hover:shadow-xl hover:shadow-primary/10`}>
                   <div className="landing-pillar-icon w-12 h-12 rounded-xl bg-white/70 ring-1 ring-white/80 backdrop-blur-sm flex items-center justify-center mb-6 transition-all text-primary">
@@ -726,7 +763,7 @@ function App() {
                     </div>
                     <div className="mt-6 pt-4 border-t border-white/5 flex justify-between items-center text-[10px]">
                       <span className="text-slate-500">Tps: 64,812 | Finality: 0.4s</span>
-                      <span className="text-primary font-bold animate-pulse">Ã¢â€”Â NETWORK SYNCED</span>
+                      <span className="text-primary font-bold animate-pulse">● NETWORK SYNCED</span>
                     </div>
                   </div>
                 </div>
@@ -959,7 +996,7 @@ function App() {
                             <div className="flex justify-between">
                               <span className="text-slate-500">Location</span>
                               <span className="text-slate-700 font-medium">
-                                {parcel.location?.district}, {parcel.location?.municipality}
+                                {[parcel.location?.province, parcel.location?.district, parcel.location?.municipality].filter(Boolean).join(', ') || '—'}
                               </span>
                             </div>
                             <div className="flex justify-between">
@@ -1056,10 +1093,11 @@ function App() {
                                         <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                                           <div><span className="text-slate-500">Owner name</span><br /><span className="font-medium text-slate-800">{r.ownerName}</span></div>
                                           <div><span className="text-slate-500">Wallet</span><br /><span className="font-mono text-slate-800 break-all">{r.walletAddress}</span></div>
-                                          <div><span className="text-slate-500">District</span><br /><span className="text-slate-800">{r.location?.district || 'Ã¢â‚¬â€'}</span></div>
-                                          <div><span className="text-slate-500">Municipality</span><br /><span className="text-slate-800">{r.location?.municipality || 'Ã¢â‚¬â€'}</span></div>
-                                          <div><span className="text-slate-500">Ward</span><br /><span className="text-slate-800">{r.location?.ward ?? 'Ã¢â‚¬â€'}</span></div>
-                                          <div><span className="text-slate-500">Tole</span><br /><span className="text-slate-800">{r.location?.tole || 'Ã¢â‚¬â€'}</span></div>
+                                          <div><span className="text-slate-500">Province</span><br /><span className="text-slate-800">{r.location?.province || '—'}</span></div>
+                                          <div><span className="text-slate-500">District</span><br /><span className="text-slate-800">{r.location?.district || '—'}</span></div>
+                                          <div><span className="text-slate-500">Municipality</span><br /><span className="text-slate-800">{r.location?.municipality || '—'}</span></div>
+                                          <div><span className="text-slate-500">Ward</span><br /><span className="text-slate-800">{r.location?.ward ?? '—'}</span></div>
+                                          <div><span className="text-slate-500">Tole</span><br /><span className="text-slate-800">{r.location?.tole || '—'}</span></div>
                                           <div><span className="text-slate-500">Size</span><br /><span className="text-slate-800">{formatSize(r.size)}</span></div>
                                           <div><span className="text-slate-500">Submitted</span><br /><span className="text-slate-800">{new Date(r.createdAt).toLocaleString()}</span></div>
                                         </div>
@@ -1079,7 +1117,7 @@ function App() {
                                           <div><span className="text-slate-500">Your wallet</span><br /><span className="font-mono text-slate-800 break-all">{r.walletAddress}</span></div>
                                           <div><span className="text-slate-500">To (recipient)</span><br /><span className="text-slate-800">{r.toName}</span></div>
                                           <div><span className="text-slate-500">Recipient wallet</span><br /><span className="font-mono text-slate-800 break-all">{r.toWallet}</span></div>
-                                          <div><span className="text-slate-500">Parcel ID</span><br /><span className="font-mono text-slate-800">{r.parcelId || 'Ã¢â‚¬â€'}</span></div>
+                                          <div><span className="text-slate-500">Parcel ID</span><br /><span className="font-mono text-slate-800">{r.parcelId || '—'}</span></div>
                                           <div><span className="text-slate-500">Submitted</span><br /><span className="text-slate-800">{new Date(r.createdAt).toLocaleString()}</span></div>
                                         </div>
                                         {r.paymentTxSignature && !r.paymentTxSignature.startsWith('dev-') && (
@@ -1105,7 +1143,7 @@ function App() {
                       <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-16 text-center">
                         <MapPin className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                         <h2 className="text-xl font-semibold text-slate-800 mb-2">No parcels yet</h2>
-                        <p className="text-slate-500 mb-6">You donÃ¢â‚¬â„¢t have any registered parcels. Register your first land to mint an NFT on Solana.</p>
+                        <p className="text-slate-500 mb-6">You don't have any registered parcels. Register your first land to mint an NFT on Solana.</p>
                         <button
                           onClick={() => setShowRegisterModal(true)}
                           className="inline-flex items-center gap-2 px-8 py-3 bg-primary text-white rounded-xl font-bold hover:translate-y-[-1px] transition-all shadow-lg shadow-primary/20"
@@ -1130,7 +1168,8 @@ function App() {
                                 </div>
                                 <h3 className="font-semibold text-lg text-slate-800">{parcel.ownerName}</h3>
                                 <p className="text-slate-500">
-                                  {parcel.location?.municipality}, Ward {parcel.location?.ward}, {parcel.location?.tole}
+                                  {[parcel.location?.province, parcel.location?.district, parcel.location?.municipality].filter(Boolean).join(', ')}
+                                  {(parcel.location?.ward != null || parcel.location?.tole) ? ` · Ward ${parcel.location?.ward ?? '—'}, ${parcel.location?.tole || '—'}` : ''}
                                 </p>
                                 <p className="text-sm text-slate-400 mt-2">Size: {formatSize(parcel.size)}</p>
                               </div>
@@ -1270,6 +1309,7 @@ function App() {
                                 <div className="grid grid-cols-2 gap-x-8 gap-y-2">
                                   <div><span className="text-slate-500">Owner</span><br /><span className="font-medium text-slate-800">{item.ownerName}</span></div>
                                   <div><span className="text-slate-500">Wallet</span><br /><span className="font-mono text-slate-800 break-all">{item.walletAddress}</span></div>
+                                  <div><span className="text-slate-500">Province</span><br /><span className="text-slate-800">{item.location?.province || '—'}</span></div>
                                   <div><span className="text-slate-500">District</span><br /><span className="text-slate-800">{item.location?.district}</span></div>
                                   <div><span className="text-slate-500">Municipality</span><br /><span className="text-slate-800">{item.location?.municipality}</span></div>
                                   <div><span className="text-slate-500">Ward / Tole</span><br /><span className="text-slate-800">{item.location?.ward} / {item.location?.tole}</span></div>
@@ -1366,6 +1406,7 @@ function App() {
                                   <div><span className="text-slate-500">Wallet</span><br /><span className="font-mono text-slate-800 break-all">{item.walletAddress}</span></div>
                                   {item.requestType === 'registration' ? (
                                     <>
+                                      <div><span className="text-slate-500">Province</span><br /><span className="text-slate-800">{item.location?.province || '—'}</span></div>
                                       <div><span className="text-slate-500">District</span><br /><span className="text-slate-800">{item.location?.district}</span></div>
                                       <div><span className="text-slate-500">Municipality</span><br /><span className="text-slate-800">{item.location?.municipality}</span></div>
                                       <div><span className="text-slate-500">Ward / Tole</span><br /><span className="text-slate-800">{item.location?.ward} / {item.location?.tole}</span></div>
@@ -1515,7 +1556,7 @@ function App() {
               <FileCheck className="w-5 h-5 text-accent-crimson" /> Register new land
             </h2>
             <p className="text-sm text-slate-500 mb-4">
-              {feeConfig.citizenFeeSol > 0 ? `${feeConfig.citizenFeeSol} SOL (proof)` : 'Network fee only (no protocol fee)'}{!feeConfig.treasuryWallet && feeConfig.citizenFeeSol > 0 && ' Ã¢â‚¬â€ dev: paying to your wallet'}
+              {feeConfig.citizenFeeSol > 0 ? `${feeConfig.citizenFeeSol} SOL (proof)` : 'Network fee only (no protocol fee)'}{!feeConfig.treasuryWallet && feeConfig.citizenFeeSol > 0 && ' — dev: paying to your wallet'}
             </p>
             {!feeConfig.solanaConfigured && (
               <div className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
@@ -1524,7 +1565,7 @@ function App() {
             )}
             {feeConfig.solanaConfigured && (
               <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
-                When you submit, <strong>your wallet (e.g. Phantom) will open</strong>. Confirm the transaction there Ã¢â‚¬â€ that is your Solana proof. After government approval, a parcel NFT will be minted to your wallet.
+                When you submit, <strong>your wallet (e.g. Phantom) will open</strong>. Confirm the transaction there — that is your Solana proof. After government approval, a parcel NFT will be minted to your wallet.
               </div>
             )}
             <form onSubmit={handleRegistration} className="space-y-4">
@@ -1538,17 +1579,70 @@ function App() {
                   className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Province</label>
+                <select
+                  required
+                  value={registerForm.province}
+                  onChange={(e) => {
+                    const province = e.target.value
+                    setRegisterForm({ ...registerForm, province, district: '' })
+                    setDistrictSearch('')
+                    setDistrictDropdownOpen(false)
+                  }}
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none bg-white"
+                >
+                  <option value="">Select province</option>
+                  {NEPAL_PROVINCES.map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="relative">
+                <label className="block text-sm font-medium text-slate-700 mb-1">District</label>
+                <input
+                  required
+                  type="text"
+                  placeholder="Type to search (e.g. r for Ramechhap, Rautahat...)"
+                  value={districtSearch || registerForm.district}
+                  onChange={(e) => {
+                    const q = e.target.value
+                    setDistrictSearch(q)
+                    setDistrictDropdownOpen(true)
+                    if (!q) setRegisterForm((f) => ({ ...f, district: '' }))
+                    else {
+                      const provinceDistricts = NEPAL_DISTRICTS_BY_PROVINCE[registerForm.province] || []
+                      const match = provinceDistricts.find((d) => d.toLowerCase().startsWith(q.toLowerCase()))
+                      if (match && match.toLowerCase() === q.toLowerCase()) setRegisterForm((f) => ({ ...f, district: match }))
+                      else setRegisterForm((f) => ({ ...f, district: '' }))
+                    }
+                  }}
+                  onFocus={() => setDistrictDropdownOpen(true)}
+                  onBlur={() => setTimeout(() => setDistrictDropdownOpen(false), 180)}
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                />
+                {districtDropdownOpen && registerForm.province && (
+                  <ul className="absolute z-20 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg py-1">
+                    {((NEPAL_DISTRICTS_BY_PROVINCE[registerForm.province] || []).filter((d) =>
+                      !districtSearch || d.toLowerCase().startsWith(districtSearch.toLowerCase())
+                    )).map((d) => (
+                      <li
+                        key={d}
+                        onMouseDown={(e) => { e.preventDefault(); setRegisterForm((f) => ({ ...f, district: d })); setDistrictSearch(d); setDistrictDropdownOpen(false) }}
+                        className={`px-4 py-2 cursor-pointer ${registerForm.district === d ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-slate-100 text-slate-800'}`}
+                      >
+                        {d}
+                      </li>
+                    ))}
+                    {registerForm.province && (NEPAL_DISTRICTS_BY_PROVINCE[registerForm.province] || []).filter((d) =>
+                      !districtSearch || d.toLowerCase().startsWith(districtSearch.toLowerCase())
+                    ).length === 0 && (
+                      <li className="px-4 py-2 text-slate-500">No district starting with &quot;{districtSearch}&quot;</li>
+                    )}
+                  </ul>
+                )}
+              </div>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">District</label>
-                  <input
-                    required
-                    type="text"
-                    value={registerForm.district}
-                    onChange={(e) => setRegisterForm({ ...registerForm, district: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
-                  />
-                </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Municipality</label>
                   <input
@@ -1620,7 +1714,7 @@ function App() {
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowRegisterModal(false)}
+                  onClick={() => { setShowRegisterModal(false); setDistrictSearch(''); setDistrictDropdownOpen(false) }}
                   className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition"
                 >
                   Cancel
@@ -1632,7 +1726,7 @@ function App() {
                 >
                   {txLoading === 'registering' ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" /> SubmittingÃ¢â‚¬Â¦
+                      <Loader2 className="w-4 h-4 animate-spin" /> Submitting…
                     </>
                   ) : (
                     'Submit for approval'
@@ -1657,7 +1751,7 @@ function App() {
               <Zap className="w-5 h-5 text-accent-crimson" /> Transfer parcel
             </h2>
             <p className="text-sm text-slate-500 mb-4">
-              {feeConfig.citizenFeeSol > 0 ? `${feeConfig.citizenFeeSol} SOL (proof)` : 'Network fee only (no protocol fee)'}{!feeConfig.treasuryWallet && feeConfig.citizenFeeSol > 0 && ' Ã¢â‚¬â€ dev: paying to your wallet'}
+              {feeConfig.citizenFeeSol > 0 ? `${feeConfig.citizenFeeSol} SOL (proof)` : 'Network fee only (no protocol fee)'}{!feeConfig.treasuryWallet && feeConfig.citizenFeeSol > 0 && ' — dev: paying to your wallet'}
             </p>
             {!feeConfig.solanaConfigured && (
               <div className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
@@ -1666,7 +1760,7 @@ function App() {
             )}
             {feeConfig.solanaConfigured && (
               <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
-                When you submit, <strong>your wallet will open</strong>. Confirm the transaction Ã¢â‚¬â€ that records your transfer request on Solana.
+                When you submit, <strong>your wallet will open</strong>. Confirm the transaction — that records your transfer request on Solana.
               </div>
             )}
             <form onSubmit={handleTransfer} className="space-y-4">
@@ -1711,7 +1805,7 @@ function App() {
                 >
                   {txLoading === 'transferring' ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" /> ProcessingÃ¢â‚¬Â¦
+                      <Loader2 className="w-4 h-4 animate-spin" /> Processing…
                     </>
                   ) : (
                     'Request transfer'
