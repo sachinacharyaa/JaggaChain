@@ -1327,38 +1327,38 @@ function App() {
           onClick={() => setShowRegisterModal(false)}
         >
           <div
-            className="premium-card rounded-2xl shadow-2xl border border-slate-200 p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            className="premium-card rounded-2xl shadow-2xl border border-[rgba(212,160,23,0.35)] p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-black text-slate-900 mb-4 flex items-center gap-2">
-              <FileCheck className="w-5 h-5 text-accent-crimson" /> Register new land
+            <h2 className="text-xl font-black mb-4 flex items-center gap-2">
+              <FileCheck className="w-5 h-5 text-[#F5C842]" /> Register new land
             </h2>
-            <p className="text-sm text-slate-500 mb-4">
+            <p className="text-sm text-[rgba(245,237,216,0.75)] mb-4">
               {feeConfig.citizenFeeSol > 0 ? `${feeConfig.citizenFeeSol} SOL (proof)` : 'Network fee only (no protocol fee)'}{!feeConfig.treasuryWallet && feeConfig.citizenFeeSol > 0 && ' — dev: paying to your wallet'}
             </p>
             {!feeConfig.solanaConfigured && (
-              <div className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+              <div className="mb-4 p-3 rounded-xl bg-[rgba(251,191,36,0.12)] border border-[rgba(251,191,36,0.6)] text-[rgba(253,224,71,0.9)] text-sm">
                 Backend Solana RPC is not configured. Set <strong>SOLANA_RPC_URL</strong> in <strong>backend/.env</strong> and restart the backend so fee payment works.
               </div>
             )}
             {feeConfig.solanaConfigured && (
-              <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
+              <div className="mb-4 p-3 rounded-xl bg-[rgba(20,241,149,0.08)] border border-[rgba(20,241,149,0.4)] text-[rgba(209,250,229,0.9)] text-sm">
                 When you submit, <strong>your wallet (e.g. Phantom) will open</strong>. Confirm the transaction there — that is your Solana proof. After government approval, a parcel NFT will be minted to your wallet.
               </div>
             )}
             <form onSubmit={handleRegistration} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Owner name</label>
+                <label className="block text-sm font-medium mb-1">Owner name</label>
                 <input
                   required
                   type="text"
                   value={registerForm.ownerName}
                   onChange={(e) => setRegisterForm({ ...registerForm, ownerName: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                  className="w-full px-4 py-2.5 rounded-xl border border-[rgba(212,160,23,0.4)] bg-[#0A0608] text-[#F5EDD8] focus:ring-2 focus:ring-[#F5C842] outline-none"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Province</label>
+                <label className="block text-sm font-medium mb-1">Province</label>
                 <select
                   required
                   value={registerForm.province}
@@ -1368,7 +1368,7 @@ function App() {
                     setDistrictSearch('')
                     setDistrictDropdownOpen(false)
                   }}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none bg-white"
+                  className="w-full px-4 py-2.5 rounded-xl border border-[rgba(212,160,23,0.4)] bg-[#0A0608] text-[#F5EDD8] focus:ring-2 focus:ring-[#F5C842] outline-none"
                 >
                   <option value="">Select province</option>
                   {NEPAL_PROVINCES.map((p) => (
@@ -1377,7 +1377,7 @@ function App() {
                 </select>
               </div>
               <div className="relative">
-                <label className="block text-sm font-medium text-slate-700 mb-1">District</label>
+                <label className="block text-sm font-medium mb-1">District</label>
                 <input
                   required
                   type="text"
@@ -1397,17 +1397,17 @@ function App() {
                   }}
                   onFocus={() => setDistrictDropdownOpen(true)}
                   onBlur={() => setTimeout(() => setDistrictDropdownOpen(false), 180)}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                  className="w-full px-4 py-2.5 rounded-xl border border-[rgba(212,160,23,0.4)] bg-[#0A0608] text-[#F5EDD8] focus:ring-2 focus:ring-[#F5C842] outline-none"
                 />
                 {districtDropdownOpen && registerForm.province && (
-                  <ul className="absolute z-20 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg py-1">
+                  <ul className="absolute z-20 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-[rgba(212,160,23,0.4)] bg-[#120D0F] shadow-lg py-1">
                     {((NEPAL_DISTRICTS_BY_PROVINCE[registerForm.province] || []).filter((d) =>
                       !districtSearch || d.toLowerCase().startsWith(districtSearch.toLowerCase())
                     )).map((d) => (
                       <li
                         key={d}
                         onMouseDown={(e) => { e.preventDefault(); setRegisterForm((f) => ({ ...f, district: d })); setDistrictSearch(d); setDistrictDropdownOpen(false) }}
-                        className={`px-4 py-2 cursor-pointer ${registerForm.district === d ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-slate-100 text-slate-800'}`}
+                        className={`px-4 py-2 cursor-pointer ${registerForm.district === d ? 'bg-[rgba(245,200,66,0.15)] text-[#F5C842] font-medium' : 'hover:bg-[rgba(37,37,37,0.8)] text-[rgba(245,237,216,0.9)]'}`}
                       >
                         {d}
                       </li>
@@ -1415,71 +1415,71 @@ function App() {
                     {registerForm.province && (NEPAL_DISTRICTS_BY_PROVINCE[registerForm.province] || []).filter((d) =>
                       !districtSearch || d.toLowerCase().startsWith(districtSearch.toLowerCase())
                     ).length === 0 && (
-                      <li className="px-4 py-2 text-slate-500">No district starting with &quot;{districtSearch}&quot;</li>
+                      <li className="px-4 py-2 text-[rgba(245,237,216,0.6)]">No district starting with &quot;{districtSearch}&quot;</li>
                     )}
                   </ul>
                 )}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Municipality</label>
+                  <label className="block text-sm font-medium mb-1">Municipality</label>
                   <input
                     required
                     type="text"
                     value={registerForm.municipality}
                     onChange={(e) => setRegisterForm({ ...registerForm, municipality: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[rgba(212,160,23,0.4)] bg-[#0A0608] text-[#F5EDD8] focus:ring-2 focus:ring-[#F5C842] outline-none"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Ward</label>
+                  <label className="block text-sm font-medium mb-1">Ward</label>
                   <input
                     required
                     type="number"
                     value={registerForm.ward}
                     onChange={(e) => setRegisterForm({ ...registerForm, ward: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[rgba(212,160,23,0.4)] bg-[#0A0608] text-[#F5EDD8] focus:ring-2 focus:ring-[#F5C842] outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Tole</label>
+                  <label className="block text-sm font-medium mb-1">Tole</label>
                   <input
                     required
                     type="text"
                     value={registerForm.tole}
                     onChange={(e) => setRegisterForm({ ...registerForm, tole: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[rgba(212,160,23,0.4)] bg-[#0A0608] text-[#F5EDD8] focus:ring-2 focus:ring-[#F5C842] outline-none"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Bigha</label>
+                  <label className="block text-sm font-medium mb-1">Bigha</label>
                   <input
                     type="number"
                     value={registerForm.bigha}
                     onChange={(e) => setRegisterForm({ ...registerForm, bigha: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[rgba(212,160,23,0.4)] bg-[#0A0608] text-[#F5EDD8] focus:ring-2 focus:ring-[#F5C842] outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Kattha</label>
+                  <label className="block text-sm font-medium mb-1">Kattha</label>
                   <input
                     type="number"
                     value={registerForm.kattha}
                     onChange={(e) => setRegisterForm({ ...registerForm, kattha: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[rgba(212,160,23,0.4)] bg-[#0A0608] text-[#F5EDD8] focus:ring-2 focus:ring-[#F5C842] outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Dhur</label>
+                  <label className="block text-sm font-medium mb-1">Dhur</label>
                   <input
                     type="number"
                     value={registerForm.dhur}
                     onChange={(e) => setRegisterForm({ ...registerForm, dhur: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[rgba(212,160,23,0.4)] bg-[#0A0608] text-[#F5EDD8] focus:ring-2 focus:ring-[#F5C842] outline-none"
                   />
                 </div>
               </div>

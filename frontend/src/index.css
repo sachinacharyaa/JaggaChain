@@ -133,6 +133,54 @@ body {
   box-shadow: 0 40px 90px rgba(0, 0, 0, 0.9), 0 10px 26px rgba(0, 0, 0, 0.85);
 }
 
+/* Dark theme text + surfaces inside app shell to match landing */
+.app-shell h1,
+.app-shell h2,
+.app-shell h3,
+.app-shell h4 {
+  color: #f5edd8;
+}
+.app-shell p,
+.app-shell span,
+.app-shell label,
+.app-shell li,
+.app-shell div {
+  color: inherit;
+}
+
+.app-shell .text-slate-900,
+.app-shell .text-slate-800 {
+  color: #f5edd8 !important;
+}
+.app-shell .text-slate-700,
+.app-shell .text-slate-600,
+.app-shell .text-slate-500 {
+  color: rgba(245, 237, 216, 0.75) !important;
+}
+.app-shell .text-slate-400 {
+  color: rgba(245, 237, 216, 0.55) !important;
+}
+
+.app-shell .bg-slate-50,
+.app-shell .bg-slate-100,
+.app-shell .bg-slate-200 {
+  background-color: #120d0f !important;
+}
+.app-shell .border-slate-200,
+.app-shell .border-slate-300,
+.app-shell .border-slate-100 {
+  border-color: rgba(212, 160, 23, 0.35) !important;
+}
+
+.app-shell input {
+  background-color: #0a0608;
+  color: #f5edd8;
+  border-color: rgba(212, 160, 23, 0.4);
+}
+.app-shell input::placeholder {
+  color: rgba(245, 237, 216, 0.45);
+}
+
 /* Nepal flag – premium wave */
 @keyframes flagWave {
   0%, 100% { transform: rotate(-3deg) scale(1); }
