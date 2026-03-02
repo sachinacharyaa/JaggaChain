@@ -936,22 +936,24 @@ function App() {
                         {myParcels.map((parcel) => (
                           <div
                             key={parcel._id}
-                            className="premium-card rounded-2xl shadow-sm border border-slate-200 p-6 card-hover"
+                            className="premium-card rounded-2xl shadow-sm border border-[rgba(212,160,23,0.35)] p-6 card-hover"
                           >
                             <div className="flex flex-wrap items-start justify-between gap-4">
                               <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-3">
-                                  <span className="px-3 py-1 bg-slate-800 text-white rounded-lg font-medium">#{parcel.tokenId}</span>
-                                  <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-sm rounded-full flex items-center gap-1">
+                                  <span className="px-3 py-1 rounded-lg font-medium bg-[rgba(15,23,42,0.9)] text-[#F5EDD8] border border-[rgba(212,160,23,0.4)]">
+                                    #{parcel.tokenId}
+                                  </span>
+                                  <span className="px-2 py-1 rounded-full text-xs font-semibold border border-[rgba(16,185,129,0.7)] text-[rgba(110,231,183,0.95)] bg-[rgba(6,78,59,0.35)] flex items-center gap-1">
                                     <CheckCircle2 className="w-3.5 h-3.5" /> Active
                                   </span>
                                 </div>
-                                <h3 className="font-semibold text-lg text-slate-800">{parcel.ownerName}</h3>
-                                <p className="text-slate-500">
+                                <h3 className="font-semibold text-lg">{parcel.ownerName}</h3>
+                                <p className="text-[rgba(245,237,216,0.75)]">
                                   {[parcel.location?.province, parcel.location?.district, parcel.location?.municipality].filter(Boolean).join(', ')}
                                   {(parcel.location?.ward != null || parcel.location?.tole) ? ` · Ward ${parcel.location?.ward ?? '—'}, ${parcel.location?.tole || '—'}` : ''}
                                 </p>
-                                <p className="text-sm text-slate-400 mt-2">Size: {formatSize(parcel.size)}</p>
+                                <p className="text-sm text-[rgba(245,237,216,0.6)] mt-2">Size: {formatSize(parcel.size)}</p>
                               </div>
                               <div className="flex flex-col gap-2">
                                 <button
@@ -959,7 +961,7 @@ function App() {
                                     setTransferForm({ ...transferForm, parcelId: parcel._id })
                                     setShowTransferModal(true)
                                   }}
-                                  className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition text-sm"
+                                  className="flex items-center gap-2 px-4 py-2 bg-[#B5121B] text-[#F5EDD8] rounded-xl font-medium hover:bg-[#7A0A10] transition text-sm"
                                 >
                                   <Zap className="w-4 h-4" /> Transfer
                                 </button>
@@ -968,7 +970,7 @@ function App() {
                                     href={`https://explorer.solana.com/tx/${parcel.transactionHash}?cluster=devnet`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center gap-2 px-4 py-2 border border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition text-sm"
+                                    className="flex items-center gap-2 px-4 py-2 border border-[rgba(212,160,23,0.4)] text-[rgba(245,237,216,0.85)] rounded-xl font-medium hover:bg-[rgba(37,16,24,0.9)] transition text-sm"
                                   >
                                     <ExternalLink className="w-4 h-4" /> View on Explorer
                                   </a>
@@ -1538,49 +1540,49 @@ function App() {
           onClick={() => setShowTransferModal(false)}
         >
           <div
-            className="premium-card rounded-2xl shadow-2xl border border-slate-200 p-6 w-full max-w-md"
+            className="premium-card rounded-2xl shadow-2xl border border-[rgba(212,160,23,0.35)] p-6 w-full max-w-md"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-black text-slate-900 mb-4 flex items-center gap-2">
-              <Zap className="w-5 h-5 text-accent-crimson" /> Transfer parcel
+            <h2 className="text-xl font-black mb-4 flex items-center gap-2">
+              <Zap className="w-5 h-5 text-[#F97373]" /> Transfer parcel
             </h2>
-            <p className="text-sm text-slate-500 mb-4">
+            <p className="text-sm text-[rgba(245,237,216,0.75)] mb-4">
               {feeConfig.citizenFeeSol > 0 ? `${feeConfig.citizenFeeSol} SOL (proof)` : 'Network fee only (no protocol fee)'}{!feeConfig.treasuryWallet && feeConfig.citizenFeeSol > 0 && ' — dev: paying to your wallet'}
             </p>
             {!feeConfig.solanaConfigured && (
-              <div className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+              <div className="mb-4 p-3 rounded-xl bg-[rgba(251,191,36,0.12)] border border-[rgba(251,191,36,0.6)] text-[rgba(253,224,71,0.9)] text-sm">
                 Backend Solana RPC is not configured. Set <strong>SOLANA_RPC_URL</strong> in <strong>backend/.env</strong> and restart the backend.
               </div>
             )}
             {feeConfig.solanaConfigured && (
-              <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
+              <div className="mb-4 p-3 rounded-xl bg-[rgba(20,241,149,0.08)] border border-[rgba(20,241,149,0.4)] text-[rgba(209,250,229,0.9)] text-sm">
                 When you submit, <strong>your wallet will open</strong>. Confirm the transaction — that records your transfer request on Solana.
               </div>
             )}
             <form onSubmit={handleTransfer} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Recipient name</label>
+                <label className="block text-sm font-medium mb-1">Recipient name</label>
                 <input
                   required
                   type="text"
                   value={transferForm.toName}
                   onChange={(e) => setTransferForm({ ...transferForm, toName: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                  className="w-full px-4 py-2.5 rounded-xl border border-[rgba(212,160,23,0.4)] bg-[#0A0608] text-[#F5EDD8] focus:ring-2 focus:ring-[#F97373] outline-none"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Recipient Solana wallet</label>
+                <label className="block text-sm font-medium mb-1">Recipient Solana wallet</label>
                 <input
                   required
                   type="text"
                   value={transferForm.toWallet}
                   onChange={(e) => setTransferForm({ ...transferForm, toWallet: e.target.value })}
                   placeholder="Base58 address"
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-mono text-sm"
+                  className="w-full px-4 py-2.5 rounded-xl border border-[rgba(212,160,23,0.4)] bg-[#0A0608] text-[#F5EDD8] focus:ring-2 focus:ring-[#F97373] outline-none font-mono text-sm"
                 />
               </div>
-              <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl">
-                <p className="text-sm text-amber-800">
+              <div className="bg-[rgba(212,160,23,0.12)] border border-[rgba(212,160,23,0.5)] p-4 rounded-xl">
+                <p className="text-sm text-[rgba(245,237,216,0.9)]">
                   Transfer requires government approval. After approval, an NFT will be minted/updated on Solana.
                 </p>
               </div>
@@ -1588,7 +1590,7 @@ function App() {
                 <button
                   type="button"
                   onClick={() => setShowTransferModal(false)}
-                  className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition"
+                  className="flex-1 px-4 py-2.5 border border-[rgba(212,160,23,0.4)] text-[rgba(245,237,216,0.9)] rounded-xl font-medium hover:bg-[rgba(37,16,24,0.9)] transition"
                 >
                   Cancel
                 </button>
