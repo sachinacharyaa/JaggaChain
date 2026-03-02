@@ -1133,37 +1133,37 @@ function App() {
 
                 {/* Chief Land Revenue Officer: proposed records – Approve / Reject (0.08 SOL) */}
                 {isCLRO && (
-                <div className="premium-card rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="premium-card rounded-2xl shadow-sm border border-[rgba(212,160,23,0.35)] overflow-hidden">
                   <div className="bg-slate-900 px-6 py-5 border-b border-white/10">
                     <h2 className="text-lg font-black text-white flex items-center gap-2">
                       <Landmark className="w-5 h-5 text-primary" /> Records for approval (प्रमुख मालपोत अधिकृत)
                     </h2>
-                    <p className="text-slate-400 text-sm mt-1">Approve or reject. Wallet will open. Fee: {feeConfig.clroFeeSol} SOL per action.</p>
+                    <p className="text-slate-300 text-sm mt-1">Approve or reject. Wallet will open. Fee: {feeConfig.clroFeeSol} SOL per action.</p>
                   </div>
                   {proposedRequests.length === 0 ? (
-                    <div className="p-8 text-center text-slate-500">No proposed records for approval.</div>
+                    <div className="p-8 text-center text-[rgba(245,237,216,0.7)]">No proposed records for approval.</div>
                   ) : (
-                    <div className="divide-y divide-slate-100">
+                    <div className="divide-y divide-[rgba(212,160,23,0.35)]">
                       {proposedRequests.map((item) => (
                         <div key={item._id} className="overflow-hidden">
                           <div
-                            className="p-6 flex flex-wrap items-center justify-between gap-4 hover:bg-slate-50 transition cursor-pointer"
+                            className="p-6 flex flex-wrap items-center justify-between gap-4 hover:bg-[rgba(37,16,24,0.9)] transition cursor-pointer"
                             onClick={() => setExpandedRequestId(expandedRequestId === item._id ? null : item._id)}
                           >
                             <div className="flex items-center gap-3">
                               {expandedRequestId === item._id ? (
-                                <ChevronDown className="w-5 h-5 text-slate-400" />
+                                <ChevronDown className="w-5 h-5 text-[rgba(245,237,216,0.6)]" />
                               ) : (
-                                <ChevronRight className="w-5 h-5 text-slate-400" />
+                                <ChevronRight className="w-5 h-5 text-[rgba(245,237,216,0.6)]" />
                               )}
                               <div>
-                                <h3 className="font-semibold text-slate-800">{item.ownerName || 'Transfer'}</h3>
-                                <p className="text-sm text-slate-500 font-mono">From: {truncateHash(item.walletAddress)}</p>
-                                <span className="inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600">
+                                <h3 className="font-semibold">{item.ownerName || 'Transfer'}</h3>
+                                <p className="text-sm text-[rgba(245,237,216,0.7)] font-mono">From: {truncateHash(item.walletAddress)}</p>
+                                <span className="inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium border border-[rgba(212,160,23,0.6)] text-[rgba(245,237,216,0.9)]">
                                   {item.requestType === 'registration' ? 'Registration' : 'Transfer'}
                                 </span>
                                 {item.toName && (
-                                  <p className="text-sm text-slate-500 mt-0.5">
+                                  <p className="text-sm text-[rgba(245,237,216,0.7)] mt-0.5">
                                     To: {item.toName} ({truncateHash(item.toWallet)})
                                   </p>
                                 )}
@@ -1171,7 +1171,7 @@ function App() {
                             </div>
                             <div className="flex items-center gap-3">
                               {txLoading === item._id ? (
-                                <span className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl inline-flex items-center gap-2">
+                                <span className="px-4 py-2 bg-[rgba(37,16,24,0.9)] text-[rgba(245,237,216,0.8)] rounded-xl inline-flex items-center gap-2 border border-[rgba(212,160,23,0.5)]">
                                   <Loader2 className="w-4 h-4 animate-spin" /> Processing
                                 </span>
                               ) : (
@@ -1200,10 +1200,10 @@ function App() {
                           </div>
                           {expandedRequestId === item._id && (
                             <div className="px-6 pb-6 pt-0 animate-fadeIn">
-                              <div className="rounded-xl bg-slate-50 border border-slate-100 p-5 text-sm space-y-3">
+                              <div className="rounded-xl bg-[rgba(10,6,8,0.9)] border border-[rgba(212,160,23,0.35)] p-5 text-sm space-y-3">
                                 <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-                                  <div><span className="text-slate-500">Owner</span><br /><span className="font-medium text-slate-800">{item.ownerName}</span></div>
-                                  <div><span className="text-slate-500">Wallet</span><br /><span className="font-mono text-slate-800 break-all">{item.walletAddress}</span></div>
+                                  <div><span className="text-[rgba(245,237,216,0.6)]">Owner</span><br /><span className="font-medium">{item.ownerName}</span></div>
+                                  <div><span className="text-[rgba(245,237,216,0.6)]">Wallet</span><br /><span className="font-mono break-all">{item.walletAddress}</span></div>
                                   {item.requestType === 'registration' ? (
                                     <>
                                       <div><span className="text-slate-500">Province</span><br /><span className="text-slate-800">{item.location?.province || '—'}</span></div>
