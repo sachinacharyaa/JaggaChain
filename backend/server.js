@@ -5,7 +5,25 @@ const cors = require('cors');
 const solana = require('./solana');
 
 const app = express();
-app.use(cors());
+
+// CORS: allow only configured frontend origins (local + Vercel)
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow non-browser / same-origin requests with no Origin header
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error('Not allowed by CORS'));
+    }
+  })
+);
+
 app.use(express.json());
 
 // Fee config: Citizen 0.02, Land Revenue Officer (proposal) 0.05, Chief Land Revenue Officer (approve/reject) 0.08
@@ -15,7 +33,7 @@ const FEE_CLRO_SOL = parseFloat(process.env.FEE_CLRO_SOL || '0.08');
 const TREASURY_WALLET = process.env.TREASURY_WALLET || '';
 const ENABLE_DEMO_SEED = process.env.ENABLE_DEMO_SEED === 'true';
 
-const MONGO_URI = 'mongodb+srv://sachinacharya365official_db_user:kEX4fEHa1FNjVyWt@cluster0.k8tooiv.mongodb.net/onChain-Jagga';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://sachinacharya365official_db_user:kEX4fEHa1FNjVyWt@cluster0.k8tooiv.mongodb.net/onChain-Jagga';
 
 mongoose.connect(MONGO_URI)
   .then(() => console.log('MongoDB Connected'))
@@ -520,4 +538,11 @@ if (ENABLE_DEMO_SEED) {
 }
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// Only start the HTTP listener when running this file directly (local dev).
+// When required by Vercel's serverless function entrypoint, we export the app instead.
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
+
+module.exports = app;
