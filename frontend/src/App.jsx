@@ -544,305 +544,41 @@ function App() {
     : []
   const myParcels = parcels
 
-  const Landing = () => (
-    <div className="min-h-screen">
-      {/* Top Navigation */}
-      <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-20 items-center justify-between gap-8">
-            <button onClick={() => setActiveTab('landing')} className="flex items-center group cursor-pointer">
-              <JaggaChainLogo />
-            </button>
-            <nav className="hidden md:flex items-center gap-10 text-base lg:text-lg font-semibold text-slate-700">
-              <a className="hover:text-primary transition-colors" href="#pillars">Technology</a>
-              <a className="hover:text-primary transition-colors" href="#how-it-works">How it Works</a>
-              <button onClick={() => setActiveTab('explorer')} className="hover:text-primary transition-colors">Explorer</button>
-            </nav>
-            <div className="flex items-center gap-4">
-              <WalletMultiButton className="!bg-primary !text-white !px-6 !py-3 !rounded-xl !text-sm lg:!text-base !font-bold hover:!bg-primary/90 !transition-all !shadow-lg !shadow-primary/20" />
-            </div>
-          </div>
+  const Landing = () => {
+    useEffect(() => {
+      const handler = (event) => {
+        if (!event || !event.data || event.data.type !== 'jagga-nav') return
+        if (event.data.target === 'parcels') {
+          setActiveTab('parcels')
+        } else if (event.data.target === 'explorer') {
+          setActiveTab('explorer')
+          fetchParcels()
+        }
+      }
+      window.addEventListener('message', handler)
+      return () => window.removeEventListener('message', handler)
+    }, [])
+
+    return (
+      <div className="min-h-screen">
+        <iframe
+          src="/landing.html"
+          title="JaggaChain Landing"
+          className="w-full min-h-screen border-0"
+        />
+        {/* Simple bridge into the React app while keeping the exact landing visual */}
+        <div className="fixed bottom-4 right-4 z-50 hidden md:block">
+          <button
+            type="button"
+            onClick={() => setActiveTab('explorer')}
+            className="rounded-full bg-primary text-white text-xs font-semibold px-4 py-2 shadow-lg shadow-black/40 hover:bg-red-700 transition-colors"
+          >
+            Enter App
+          </button>
         </div>
-      </header>
-
-      <main className="bg-hero-nepal">
-        {/* Hero Section */}
-        <section className="relative min-h-[85vh] flex items-center overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-16 lg:py-24">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <div className="space-y-8 animate-fadeInUp max-w-[560px]">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/70 border border-[#cccccc] text-[#444] text-[13px] font-medium tracking-wide shadow-sm">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary"></span>
-                  National land trust layer on Solana
-                </div>
-                <h1 className="font-display font-black text-[32px] sm:text-[40px] lg:text-[52px] leading-[1.15] text-[#1a1a2e]">
-                  Secure <span className="text-[#c0392b]">Land Ownership</span> on the <span className="text-primary">Blockchain</span>.
-                </h1>
-                <p className="subtitle text-[15px] text-[#555] leading-[1.7] max-w-[420px]">
-                  Each registration, transfer request, approval, and rejection gets a Solana trail with explorer links.
-                </p>
-                <div className="buttons flex flex-wrap gap-3 items-center">
-                  <button
-                    onClick={() => setActiveTab('explorer')}
-                    className="btn-primary flex items-center gap-2 rounded-lg text-[15px] font-semibold px-6 py-3.5 shadow-sm"
-                    style={{ backgroundColor: '#c0392b', color: 'white' }}
-                  >
-                    Explore Public Records
-                  </button>
-                  <button
-                    onClick={() => {
-                      // open wallet button from navbar via click, but as fallback just focus the wallet adapter
-                      const el = document.querySelector('.wallet-adapter-button');
-                      if (el) el.click();
-                    }}
-                    type="button"
-                    className="btn-secondary rounded-lg border text-[15px] font-medium px-6 py-3.5 bg-white text-[#1a1a2e] hover:bg-[#001f5c] hover:text-white transition-colors duration-200"
-                    style={{ borderColor: '#cccccc' }}
-                  >
-                    Connect Wallet
-                  </button>
-                </div>
-              </div>
-
-              {/* Visual Side – Nepal typography tile */}
-              <div className="relative z-10 flex justify-end animate-fadeInUp animate-delay-200">
-                <div className="relative rounded-3xl overflow-hidden border border-white/20 shadow-2xl w-[360px] sm:w-[380px] lg:w-[400px] aspect-[4/5] bg-slate-900">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-primary/40 to-accent-crimson/20 z-10"></div>
-                  <div className="absolute inset-0 flex items-center justify-center p-4">
-                    <div
-                      className="w-full h-full rounded-2xl bg-center bg-cover border border-white/10"
-                      data-alt="Stylized 3D digital typography of Nepal with blockchain nodes"
-                      data-location="Nepal"
-                      style={{
-                        backgroundImage:
-                          "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBaCIriVUYqZ1AeMAwWwadXUeYCKJuq5TkmSCopViUbFpe2XrqUM1g2Z8HtdFZ-k0SAOA5f0oJn76Rz-zN_TXyLvltfJmUclpXMTdpzUsDPhNT8j1DxODb8jgnvE0SHCfev-SJPqIlqZk7NIwFqJfG1shmzcVpN9EQ2tePZLqDWnb5CIDwHsxJFJozMzDC0zNRG_Pq9PlMl80_Qu1KCV4CpppnoHJ_8cVrFDhc1Q_7e1SGGmo0XUD5GSBrNgQmloGYFKcKey66huvw')",
-                      }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Problem Section (Second Full Page) */}
-        <section id="problem" className="min-h-screen flex items-center">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-16 lg:py-24">
-            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-              <div className="animate-fadeInUp">
-                <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-accent-crimson mb-3">
-                  Current challenge
-                </p>
-                <h2 className="text-[30px] sm:text-[38px] lg:text-[48px] leading-[1.15] font-black text-slate-900">
-                  What is the problem with today&apos;s land registry and transfer ownership?
-                </h2>
-                <p className="mt-5 text-[16px] text-slate-600 leading-[1.8] max-w-[620px]">
-                  Paper records, manual approvals, and disconnected offices slow down registration and ownership transfer.
-                  This creates delays, fraud risk, and costly title disputes for citizens.
-                </p>
-                <div className="mt-8 grid sm:grid-cols-3 gap-3">
-                  <div className="landing-problem-chip landing-chip-1 rounded-xl border border-slate-200 p-4 text-sm font-semibold text-slate-700 shadow-sm">
-                    Delayed verification
-                  </div>
-                  <div className="landing-problem-chip landing-chip-2 rounded-xl border border-slate-200 p-4 text-sm font-semibold text-slate-700 shadow-sm">
-                    Ownership conflicts
-                  </div>
-                  <div className="landing-problem-chip landing-chip-3 rounded-xl border border-slate-200 p-4 text-sm font-semibold text-slate-700 shadow-sm">
-                    Fraud and tampering risk
-                  </div>
-                </div>
-              </div>
-              <div className="animate-fadeInUp animate-delay-100">
-                <div className="landing-problem-visual rounded-3xl border border-slate-200 p-3 shadow-xl">
-                  <img
-                    src="/problem-land-registry.svg"
-                    alt="Illustration showing delays and disputes in traditional land registry and ownership transfer"
-                    className="w-full h-auto rounded-2xl"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Pillars Section */}
-        <section id="pillars" className="min-h-screen flex items-center">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mb-16">
-              <h2 className="text-primary font-bold text-sm uppercase tracking-widest mb-2">The Web3 Advantage</h2>
-              <h3 className="text-4xl font-black text-slate-900">Solana-Powered Web3 Solutions</h3>
-            </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                { icon: Shield, title: 'Immutable NFT Titles', desc: 'Your land, your token. Every property is minted as a unique NFT, ensuring non-fungible security on the global ledger.' },
-                { icon: CheckCircle2, title: 'Instant Verification', desc: 'Zero-knowledge proofs allow for immediate ownership validation without exposing sensitive personal data.' },
-                { icon: Landmark, title: 'Transparent Audit Logs', desc: 'Every change, transfer, and lien is recorded forever on the blockchain, creating an unalterable history.' },
-                { icon: Zap, title: 'High-Speed Processing', desc: "Leveraging Solana's 65k+ TPS architecture for near-instant settlement and minimal transaction fees." },
-              ].map((item, i) => (
-                <div key={i} className={`landing-pillar-card landing-pillar-tone-${i + 1} p-8 rounded-2xl border transition-all group shadow-sm border-slate-200/60 hover:shadow-xl hover:shadow-primary/10`}>
-                  <div className="landing-pillar-icon w-12 h-12 rounded-xl bg-white/70 ring-1 ring-white/80 backdrop-blur-sm flex items-center justify-center mb-6 transition-all text-primary">
-                    <item.icon className="w-6 h-6" />
-                  </div>
-                  <h4 className="text-xl font-bold mb-3">{item.title}</h4>
-                  <p className="text-slate-500 text-sm leading-relaxed">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* How It Works Diagram */}
-        <section id="how-it-works" className="min-h-screen flex items-center">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-20">
-              <h2 className="text-3xl lg:text-4xl font-black mb-4">From Physical Asset to Digital Title</h2>
-              <p className="text-slate-500 max-w-2xl mx-auto">Our streamlined process ensures every property is legally validated and cryptographically secured in four simple steps.</p>
-            </div>
-            <div className="relative">
-              <div className="grid lg:grid-cols-4 gap-8 relative z-10">
-                {[
-                  { icon: Globe, title: 'Upload Docs', desc: 'Deeds, surveys, and identity verification uploaded to our secure portal.', step: 1 },
-                  { icon: Landmark, title: 'Legal Validation', desc: 'Automated and expert legal checks ensure documentation is valid and clear.', step: 2 },
-                  { icon: Zap, title: 'Minting NFT', desc: 'Property is tokenized on the Solana blockchain as a unique asset.', step: 3 },
-                  { icon: Lock, title: 'Secure Digital Vault', desc: 'Your title is delivered to your encrypted wallet for lifetime access.', step: 4 },
-                ].map((item, i) => (
-                  <div key={i} className="flex flex-col items-center text-center group">
-                    <div
-                      className={`w-20 h-20 rounded-full shadow-xl border-4 border-slate-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform relative ${[
-                        'bg-blue-700 text-white',
-                        'bg-teal-700 text-white',
-                        'bg-violet-700 text-white',
-                        'bg-primary text-white',
-                      ][i]}`}
-                    >
-                      <item.icon className="w-8 h-8" />
-                      <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-accent-crimson text-white text-[10px] font-bold flex items-center justify-center">{item.step}</div>
-                    </div>
-                    <h5 className="font-bold text-lg mb-2">{item.title}</h5>
-                    <p className="text-sm text-slate-500">{item.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Live Audit Log Preview */}
-        <section className="min-h-screen flex items-center bg-slate-900 text-white overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <div>
-                <h2 className="text-primary font-bold text-sm uppercase tracking-widest mb-2">Real-Time Transparency</h2>
-                <h3 className="text-4xl font-black mb-6">Immutable Audit Logs</h3>
-                <p className="text-slate-400 text-lg leading-relaxed mb-8">Experience complete visibility. Every transaction is indexed and searchable, making corruption impossible and due diligence effortless.</p>
-                <ul className="space-y-4">
-                  {['Cryptographic Proof of Title', 'Zero-Downtime Global Access', 'Automated Compliance Checks'].map((text, i) => (
-                    <li key={i} className="flex items-center gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-primary" />
-                      <span>{text}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="relative">
-                <div className="bg-black/40 border border-white/10 rounded-xl p-1 backdrop-blur-sm">
-                  <div className="bg-slate-950 rounded-lg p-6 font-mono text-sm overflow-hidden">
-                    <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-4">
-                      <div className="flex gap-1.5">
-                        <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
-                        <div className="w-3 h-3 rounded-full bg-yellow-500/50"></div>
-                        <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
-                      </div>
-                      <span className="text-[10px] text-slate-500 uppercase font-bold">Live Solana Ledger Feed</span>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex gap-4"><span className="text-primary">14:02:11</span><span className="text-accent-crimson">[MINT]</span><span className="text-slate-400">Title #NFT-882... validated</span></div>
-                      <div className="flex gap-4"><span className="text-primary">13:58:45</span><span className="text-blue-400">[TRANS]</span><span className="text-slate-400">Ownership transfer request: 0x4f...</span></div>
-                      <div className="flex gap-4"><span className="text-primary">13:45:02</span><span className="text-green-400">[VERIF]</span><span className="text-slate-400">Verification successful Asset ID 9922</span></div>
-                      <div className="flex gap-4 opacity-50"><span className="text-primary">13:33:19</span><span className="text-accent-crimson">[MINT]</span><span className="text-slate-400">Title #NFT-881... finalized</span></div>
-                    </div>
-                    <div className="mt-6 pt-4 border-t border-white/5 flex justify-between items-center text-[10px]">
-                      <span className="text-slate-500">Tps: 64,812 | Finality: 0.4s</span>
-                      <span className="text-primary font-bold animate-pulse">● NETWORK SYNCED</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="min-h-screen flex items-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-primary transform -skew-y-3 origin-bottom-right"></div>
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center text-white py-12">
-            <h2 className="text-4xl font-black mb-6">Ready to Secure Your Future?</h2>
-            <p className="text-white/80 text-lg mb-10">Join the thousands of property owners who have already modernized their assets with JaggaChain.</p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={() => setActiveTab('parcels')}
-                className="bg-accent-crimson hover:bg-red-700 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-xl shadow-black/20"
-              >
-                Start Your Registry
-              </button>
-              <button onClick={() => setActiveTab('explorer')} className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-8 py-4 rounded-xl font-bold transition-all">
-                Explore Records
-              </button>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="bg-[#020b23] text-slate-100 pt-14 pb-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <div>
-              <button onClick={() => setActiveTab('landing')} className="mb-4 flex items-center group cursor-pointer">
-                <JaggaChainLogo className="h-20 w-auto" />
-              </button>
-              <h3 className="text-2xl font-black mb-3">JaggaChain</h3>
-              <div className="h-1 w-14 bg-primary rounded-full mb-4"></div>
-              <p className="text-slate-300 leading-relaxed text-sm md:text-base max-w-md">
-                JaggaChain is an innovative side project designed to strengthen Nepal's government systems and elevate e-governance to the next level.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-2xl font-black mb-3">Connect With Us</h3>
-              <div className="h-1 w-14 bg-fuchsia-500 rounded-full mb-5"></div>
-              <a
-                href="https://github.com/sachinacharyaa/JaggaChain"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-900/70 hover:bg-slate-900 transition-colors font-semibold"
-              >
-                <Github className="w-5 h-5" />
-                JaggaChain on GitHub
-              </a>
-            </div>
-
-            <div>
-              <h3 className="text-2xl font-black mb-3">Contact Us</h3>
-              <div className="h-1 w-14 bg-pink-500 rounded-full mb-5"></div>
-              <a
-                href="mailto:thesachinacharya@gmail.com"
-                className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-slate-900/70 hover:bg-slate-900 text-slate-200 hover:text-white transition-colors"
-                aria-label="Email JaggaChain"
-                title="thesachinacharya@gmail.com"
-              >
-                <Mail className="w-5 h-5" />
-              </a>
-            </div>
-          </div>
-
-          <div className="mt-10 pt-5 border-t border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm text-slate-400">
-            <p>Copyright &copy; 2026 JaggaChain</p>
-            <p>{'Made with \u2764\uFE0F For Citizens'}</p>
-          </div>
-        </div>
-      </footer>
-    </div>
-  )
+      </div>
+    )
+  }
 
   const requireWallet = (tab) => {
     if (tab === 'explorer') return false
@@ -938,13 +674,26 @@ function App() {
 
           <main className="max-w-7xl mx-auto px-4 py-8">
             {activeTab === 'explorer' && (
-              <div className="animate-fadeIn">
-                <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
-                  <h2 className="text-xl font-black text-slate-900 mb-4 flex items-center gap-2">
+              <div className="animate-fadeIn space-y-6">
+                {/* Section header to match Public Records style */}
+                <div>
+                  <p className="text-[11px] font-mono tracking-[0.32em] uppercase text-purple-400 mb-1">
+                    On-chain land registry
+                  </p>
+                  <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-1">
+                    Public Records
+                  </h1>
+                  <p className="text-sm md:text-base text-slate-500">
+                    No wallet required · Search by owner, district, municipality, or tole.
+                  </p>
+                </div>
+
+                <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-6">
+                  <h2 className="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
                     <Search className="w-5 h-5 text-primary" />
                     Search public land records
                   </h2>
-                  <p className="text-slate-500 mb-4 font-medium">No wallet required. Search by owner name, district, municipality, or tole.</p>
+                  <p className="text-slate-500 mb-4 font-medium">All registered land parcels across Nepal — publicly verifiable on Solana blockchain.</p>
                   <div className="relative">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input
@@ -1020,7 +769,19 @@ function App() {
             )}
 
             {activeTab === 'parcels' && (
-              <div className="animate-fadeIn">
+              <div className="animate-fadeIn space-y-6">
+                <div>
+                  <p className="text-[11px] font-mono tracking-[0.32em] uppercase text-amber-500 mb-1">
+                    Citizen portal
+                  </p>
+                  <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-1">
+                    My Parcels & Requests
+                  </h1>
+                  <p className="text-sm md:text-base text-slate-500">
+                    Register new land, see approved parcels, and request ownership transfers.
+                  </p>
+                </div>
+
                 {!connected ? (
                   <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-16 text-center">
                     <div className="w-20 h-20 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -1214,7 +975,21 @@ function App() {
             )}
 
             {activeTab === 'government' && (isLRO || isCLRO) && (
-              <div className="animate-fadeIn">
+              <div className="animate-fadeIn space-y-6">
+                <div>
+                  <p className="text-[11px] font-mono tracking-[0.32em] uppercase text-red-500 mb-1">
+                    Government portal
+                  </p>
+                  <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-1">
+                    {isCLRO ? 'Chief Officer Desk' : 'Officer Desk'}
+                  </h1>
+                  <p className="text-sm md:text-base text-slate-500">
+                    {isCLRO
+                      ? 'Review proposed registrations and transfers, then approve or reject with on-chain proof.'
+                      : 'See citizen records, verify details, and Proposal them to the Chief Land Revenue Officer.'}
+                  </p>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                   <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-6 card-hover">
                     <div className="flex items-center gap-4">
