@@ -1254,85 +1254,85 @@ function App() {
 
       {selectedParcelDetail && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
           onClick={() => setSelectedParcelDetail(null)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+            className="premium-card rounded-2xl shadow-2xl border border-[rgba(212,160,23,0.35)] w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[rgba(10,6,8,0.98)]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+            <div className="sticky top-0 bg-[rgba(10,6,8,0.98)] border-b border-[rgba(212,160,23,0.35)] px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-black flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-primary" /> Record #{selectedParcelDetail.tokenId} – Full details
               </h2>
               <button
                 type="button"
                 onClick={() => setSelectedParcelDetail(null)}
-                className="p-2 rounded-lg hover:bg-slate-100 text-slate-500"
+                className="p-2 rounded-lg hover:bg-[rgba(37,16,24,0.9)] text-[rgba(245,237,216,0.7)]"
                 aria-label="Close"
               >
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 space-y-6">
-              <div className="rounded-xl bg-slate-50 border border-slate-100 p-4">
-                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Parcel details</h3>
+              <div className="rounded-xl bg-[rgba(10,6,8,0.9)] border border-[rgba(212,160,23,0.35)] p-4">
+                <h3 className="text-sm font-bold text-[rgba(245,237,216,0.7)] uppercase tracking-wider mb-3">Parcel details</h3>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-                  <div><span className="text-slate-500">Token ID</span><br /><span className="font-semibold text-slate-800">#{selectedParcelDetail.tokenId}</span></div>
-                  <div><span className="text-slate-500">Status</span><br /><span className="font-semibold text-slate-800">{selectedParcelDetail.status || 'registered'}</span></div>
-                  <div className="col-span-2"><span className="text-slate-500">Owner name</span><br /><span className="font-semibold text-slate-800">{selectedParcelDetail.ownerName}</span></div>
-                  <div className="col-span-2"><span className="text-slate-500">Owner wallet</span><br /><span className="font-mono text-slate-800 break-all">{selectedParcelDetail.ownerWallet}</span></div>
-                  <div><span className="text-slate-500">Province</span><br /><span className="text-slate-800">{selectedParcelDetail.location?.province || '—'}</span></div>
-                  <div><span className="text-slate-500">District</span><br /><span className="text-slate-800">{selectedParcelDetail.location?.district || '—'}</span></div>
-                  <div><span className="text-slate-500">Municipality</span><br /><span className="text-slate-800">{selectedParcelDetail.location?.municipality || '—'}</span></div>
-                  <div><span className="text-slate-500">Ward / Tole</span><br /><span className="text-slate-800">Ward {selectedParcelDetail.location?.ward ?? '—'}, {selectedParcelDetail.location?.tole || '—'}</span></div>
-                  <div><span className="text-slate-500">Size</span><br /><span className="text-slate-800 font-medium">{formatSize(selectedParcelDetail.size)}</span></div>
-                  {selectedParcelDetail.mintAddress && <div><span className="text-slate-500">Mint (NFT)</span><br /><span className="font-mono text-xs text-slate-600 break-all">{selectedParcelDetail.mintAddress}</span></div>}
-                  {selectedParcelDetail.documentHash && <div><span className="text-slate-500">Document hash</span><br /><span className="font-mono text-xs text-slate-600 break-all">{selectedParcelDetail.documentHash}</span></div>}
-                  <div><span className="text-slate-500">Created</span><br /><span className="text-slate-800">{selectedParcelDetail.createdAt ? new Date(selectedParcelDetail.createdAt).toLocaleString() : '—'}</span></div>
-                  <div><span className="text-slate-500">Updated</span><br /><span className="text-slate-800">{selectedParcelDetail.updatedAt ? new Date(selectedParcelDetail.updatedAt).toLocaleString() : '—'}</span></div>
+                  <div><span className="text-[rgba(245,237,216,0.6)]">Token ID</span><br /><span className="font-semibold">#{selectedParcelDetail.tokenId}</span></div>
+                  <div><span className="text-[rgba(245,237,216,0.6)]">Status</span><br /><span className="font-semibold">{selectedParcelDetail.status || 'registered'}</span></div>
+                  <div className="col-span-2"><span className="text-[rgba(245,237,216,0.6)]">Owner name</span><br /><span className="font-semibold">{selectedParcelDetail.ownerName}</span></div>
+                  <div className="col-span-2"><span className="text-[rgba(245,237,216,0.6)]">Owner wallet</span><br /><span className="font-mono break-all">{selectedParcelDetail.ownerWallet}</span></div>
+                  <div><span className="text-[rgba(245,237,216,0.6)]">Province</span><br /><span>{selectedParcelDetail.location?.province || '—'}</span></div>
+                  <div><span className="text-[rgba(245,237,216,0.6)]">District</span><br /><span>{selectedParcelDetail.location?.district || '—'}</span></div>
+                  <div><span className="text-[rgba(245,237,216,0.6)]">Municipality</span><br /><span>{selectedParcelDetail.location?.municipality || '—'}</span></div>
+                  <div><span className="text-[rgba(245,237,216,0.6)]">Ward / Tole</span><br /><span>Ward {selectedParcelDetail.location?.ward ?? '—'}, {selectedParcelDetail.location?.tole || '—'}</span></div>
+                  <div><span className="text-[rgba(245,237,216,0.6)]">Size</span><br /><span className="font-medium">{formatSize(selectedParcelDetail.size)}</span></div>
+                  {selectedParcelDetail.mintAddress && <div><span className="text-[rgba(245,237,216,0.6)]">Mint (NFT)</span><br /><span className="font-mono text-xs break-all">{selectedParcelDetail.mintAddress}</span></div>}
+                  {selectedParcelDetail.documentHash && <div><span className="text-[rgba(245,237,216,0.6)]">Document hash</span><br /><span className="font-mono text-xs break-all">{selectedParcelDetail.documentHash}</span></div>}
+                  <div><span className="text-[rgba(245,237,216,0.6)]">Created</span><br /><span>{selectedParcelDetail.createdAt ? new Date(selectedParcelDetail.createdAt).toLocaleString() : '—'}</span></div>
+                  <div><span className="text-[rgba(245,237,216,0.6)]">Updated</span><br /><span>{selectedParcelDetail.updatedAt ? new Date(selectedParcelDetail.updatedAt).toLocaleString() : '—'}</span></div>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-slate-200 overflow-hidden">
-                <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider px-4 py-3 bg-slate-50 border-b border-slate-100">Three transactions</h3>
-                <div className="divide-y divide-slate-100">
+              <div className="rounded-xl border border-[rgba(212,160,23,0.35)] overflow-hidden">
+                <h3 className="text-sm font-bold uppercase tracking-wider px-4 py-3 bg-[rgba(10,6,8,0.9)] border-b border-[rgba(212,160,23,0.35)]">Three transactions</h3>
+                <div className="divide-y divide-[rgba(212,160,23,0.35)]">
                   <div className="p-4">
-                    <p className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">User transaction (नागरिक - CITIZEN)</p>
+                    <p className="text-xs font-bold uppercase tracking-wider mb-1 text-[rgba(245,237,216,0.75)]">User transaction (नागरिक - CITIZEN)</p>
                     {(() => {
                       const sig = selectedParcelDetail.citizenTxSignature ?? parcelRegistrationProof?.citizenTxSignature
                       return sig && !String(sig).startsWith('dev-') ? (
-                        <a href={`https://explorer.solana.com/tx/${sig}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="font-mono text-sm text-primary hover:underline inline-flex items-center gap-1 break-all">
+                        <a href={`https://explorer.solana.com/tx/${sig}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="font-mono text-sm text-[#7DD3FC] hover:underline inline-flex items-center gap-1 break-all">
                           {truncateHash(sig)} <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                         </a>
                       ) : (
-                        <span className="text-slate-400 text-sm">— Not recorded</span>
+                        <span className="text-[rgba(148,163,184,0.85)] text-sm">— Not recorded</span>
                       )
                     })()}
                   </div>
                   <div className="p-4">
-                    <p className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Malpot officer transaction (मालपोत अधिकृत - LAND REVENUE OFFICER)</p>
+                    <p className="text-xs font-bold uppercase tracking-wider mb-1 text-[rgba(245,237,216,0.75)]">Malpot officer transaction (मालपोत अधिकृत - LAND REVENUE OFFICER)</p>
                     {(() => {
                       const sig = selectedParcelDetail.lroProposalTxSignature ?? parcelRegistrationProof?.lroProposalTxSignature
                       return sig && !String(sig).startsWith('dev-') ? (
-                        <a href={`https://explorer.solana.com/tx/${sig}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="font-mono text-sm text-amber-600 hover:underline inline-flex items-center gap-1 break-all">
+                        <a href={`https://explorer.solana.com/tx/${sig}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="font-mono text-sm text-[#FACC15] hover:underline inline-flex items-center gap-1 break-all">
                           {truncateHash(sig)} <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                         </a>
                       ) : (
-                        <span className="text-slate-400 text-sm">— Not recorded</span>
+                        <span className="text-[rgba(148,163,184,0.85)] text-sm">— Not recorded</span>
                       )
                     })()}
                   </div>
                   <div className="p-4">
-                    <p className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Chief officer transaction (प्रमुख मालपोत अधिकृत - CHIEF LAND REVENUE OFFICER)</p>
+                    <p className="text-xs font-bold uppercase tracking-wider mb-1 text-[rgba(245,237,216,0.75)]">Chief officer transaction (प्रमुख मालपोत अधिकृत - CHIEF LAND REVENUE OFFICER)</p>
                     {(() => {
                       const sig = selectedParcelDetail.clroDecisionTxSignature ?? parcelRegistrationProof?.clroDecisionTxSignature
                       return sig && !String(sig).startsWith('dev-') ? (
-                        <a href={`https://explorer.solana.com/tx/${sig}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="font-mono text-sm text-accent-crimson hover:underline inline-flex items-center gap-1 break-all">
+                        <a href={`https://explorer.solana.com/tx/${sig}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="font-mono text-sm text-[#F97373] hover:underline inline-flex items-center gap-1 break-all">
                           {truncateHash(sig)} <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                         </a>
                       ) : (
-                        <span className="text-slate-400 text-sm">— Not recorded</span>
+                        <span className="text-[rgba(148,163,184,0.85)] text-sm">— Not recorded</span>
                       )
                     })()}
                   </div>
