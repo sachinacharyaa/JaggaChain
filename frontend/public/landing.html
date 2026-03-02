@@ -1130,7 +1130,7 @@
     <li><a href="#features">Features</a></li>
     <li><a href="#roles">Who It's For</a></li>
     <li><a href="#chain">On-Chain</a></li>
-    <li><a href="#launch" class="nav-cta">Connect Wallet</a></li>
+    <li><a href="#launch" class="nav-cta landing-connect-wallet">Connect Wallet</a></li>
   </ul>
 </nav>
 
@@ -1550,8 +1550,7 @@
     <h2>Start Your Land<br><span class="accent">Registration</span></h2>
     <p>Join thousands of Nepali citizens securing their land rights on the blockchain. Your land. Your proof. Forever.</p>
     <div class="cta-buttons">
-      <a href="#" class="btn-primary"><span>Register as Citizen</span><span>→</span></a>
-
+      <a href="#" class="btn-primary cta-register"><span>Register as Citizen</span><span>→</span></a>
     </div>
   </div>
 }</div>
@@ -1560,10 +1559,8 @@
 <footer>
   <div class="footer-logo">JaggaChain</div>
   <ul class="footer-links">
-    <li><a href="#">Documentation</a></li>
-    <li><a href="#">Explorer</a></li>
-    <li><a href="#">GitHub</a></li>
-    <li><a href="#">Contact</a></li>
+    <li><a href="https://github.com/sachinacharyaa" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+    <li><a href="mailto:thesachinacharya77@gmail.com">Contact</a></li>
   </ul>
   <div class="footer-chain">
     Powered by&nbsp;<span class="solana-badge">SOLANA</span>&nbsp;·&nbsp;Nepal Land Registry
@@ -1629,6 +1626,24 @@
       feed.removeChild(items[items.length - 1]);
     }
   }, 3000);
+
+  // Bridge hero/nav/CTA wallet actions to parent React app
+  function sendWalletMessage(e) {
+    if (e) e.preventDefault();
+    if (window.parent) {
+      window.parent.postMessage({ type: 'jagga-wallet' }, '*');
+    }
+  }
+
+  const navWallet = document.querySelector('.landing-connect-wallet');
+  if (navWallet) {
+    navWallet.addEventListener('click', sendWalletMessage);
+  }
+
+  const ctaRegister = document.querySelector('.cta-register');
+  if (ctaRegister) {
+    ctaRegister.addEventListener('click', sendWalletMessage);
+  }
 
   // Bridge hero buttons to parent React app (tabs)
   const regBtn = document.querySelector('.hero-register');

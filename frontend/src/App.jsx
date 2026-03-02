@@ -552,12 +552,20 @@ function App() {
   const Landing = () => {
     useEffect(() => {
       const handler = (event) => {
-        if (!event || !event.data || event.data.type !== 'jagga-nav') return
-        if (event.data.target === 'parcels') {
-          setActiveTab('parcels')
-        } else if (event.data.target === 'explorer') {
-          setActiveTab('explorer')
-          fetchParcels()
+        if (!event || !event.data) return
+        if (event.data.type === 'jagga-nav') {
+          if (event.data.target === 'parcels') {
+            setActiveTab('parcels')
+          } else if (event.data.target === 'explorer') {
+            setActiveTab('explorer')
+            fetchParcels()
+          }
+        }
+        if (event.data.type === 'jagga-wallet') {
+          const el = document.querySelector('.wallet-adapter-button')
+          if (el && typeof el.click === 'function') {
+            el.click()
+          }
         }
       }
       window.addEventListener('message', handler)
@@ -819,58 +827,64 @@ function App() {
                     </div>
 
                     {myRequests.length > 0 && (
-                      <div className="premium-card rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
-                        <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                      <div className="premium-card rounded-2xl shadow-sm border border-[rgba(212,160,23,0.35)] p-6 mb-8">
+                        <h3 className="font-semibold mb-4 flex items-center gap-2">
                           <FileCheck className="w-5 h-5" /> My requests
                         </h3>
-                        <p className="text-sm text-slate-500 mb-4">Click a request to see details.</p>
+                        <p className="text-sm text-[rgba(245,237,216,0.7)] mb-4">Click a request to see details.</p>
                         <div className="space-y-2">
                           {myRequests.map((r) => (
                             <div
                               key={r._id}
-                              className="rounded-xl border border-slate-200 overflow-hidden"
+                              className="rounded-xl border border-[rgba(212,160,23,0.35)] overflow-hidden bg-[rgba(12,8,11,0.95)]"
                             >
                               <div
-                                className="flex items-center justify-between p-4 bg-slate-50/50 hover:bg-slate-100/50 transition cursor-pointer"
+                                className="flex items-center justify-between p-4 hover:bg-[rgba(37,16,24,0.9)] transition cursor-pointer"
                                 onClick={() => setExpandedRequestId(expandedRequestId === r._id ? null : r._id)}
                               >
                                 <div className="flex items-center gap-3">
                                   {expandedRequestId === r._id ? (
-                                    <ChevronDown className="w-5 h-5 text-slate-400 shrink-0" />
+                                    <ChevronDown className="w-5 h-5 text-[rgba(245,237,216,0.6)] shrink-0" />
                                   ) : (
-                                    <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />
+                                    <ChevronRight className="w-5 h-5 text-[rgba(245,237,216,0.6)] shrink-0" />
                                   )}
                                   <div>
-                                    <span className="font-medium text-slate-800">{r.requestType === 'registration' ? 'Registration' : 'Transfer'}</span>
+                                    <span className="font-medium">{r.requestType === 'registration' ? 'Registration' : 'Transfer'}</span>
                                     <span
-                                      className={`ml-2 px-2 py-0.5 rounded text-xs font-medium ${r.status === 'pending' ? 'bg-amber-100 text-amber-800' : r.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}
+                                      className={`ml-2 px-2 py-0.5 rounded text-xs font-medium border ${
+                                        r.status === 'pending'
+                                          ? 'border-[rgba(251,191,36,0.6)] text-[rgba(253,224,71,0.95)]'
+                                          : r.status === 'approved'
+                                          ? 'border-[rgba(16,185,129,0.7)] text-[rgba(110,231,183,0.95)]'
+                                          : 'border-[rgba(248,113,113,0.75)] text-[rgba(248,113,113,0.95)]'
+                                      }`}
                                     >
                                       {r.status}
                                     </span>
                                   </div>
                                 </div>
-                                <span className="text-sm text-slate-500">{new Date(r.createdAt).toLocaleDateString()}</span>
+                                <span className="text-sm text-[rgba(245,237,216,0.6)]">{new Date(r.createdAt).toLocaleDateString()}</span>
                               </div>
                               {expandedRequestId === r._id && (
-                                <div className="px-4 pb-4 pt-2 border-t border-slate-100 bg-slate-50/70">
-                                  <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 text-sm space-y-3">
+                                <div className="px-4 pb-4 pt-2 border-t border-[rgba(212,160,23,0.35)] bg-[rgba(18,13,15,0.98)]">
+                                  <div className="rounded-xl bg-[rgba(10,6,8,0.9)] border border-[rgba(212,160,23,0.35)] p-4 text-sm space-y-3">
                                     {r.requestType === 'registration' ? (
                                       <>
                                         <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-                                          <div><span className="text-slate-500">Owner name</span><br /><span className="font-medium text-slate-800">{r.ownerName}</span></div>
-                                          <div><span className="text-slate-500">Wallet</span><br /><span className="font-mono text-slate-800 break-all">{r.walletAddress}</span></div>
-                                          <div><span className="text-slate-500">Province</span><br /><span className="text-slate-800">{r.location?.province || '—'}</span></div>
-                                          <div><span className="text-slate-500">District</span><br /><span className="text-slate-800">{r.location?.district || '—'}</span></div>
-                                          <div><span className="text-slate-500">Municipality</span><br /><span className="text-slate-800">{r.location?.municipality || '—'}</span></div>
-                                          <div><span className="text-slate-500">Ward</span><br /><span className="text-slate-800">{r.location?.ward ?? '—'}</span></div>
-                                          <div><span className="text-slate-500">Tole</span><br /><span className="text-slate-800">{r.location?.tole || '—'}</span></div>
-                                          <div><span className="text-slate-500">Size</span><br /><span className="text-slate-800">{formatSize(r.size)}</span></div>
-                                          <div><span className="text-slate-500">Submitted</span><br /><span className="text-slate-800">{new Date(r.createdAt).toLocaleString()}</span></div>
+                                          <div><span className="text-[rgba(245,237,216,0.6)]">Owner name</span><br /><span className="font-medium">{r.ownerName}</span></div>
+                                          <div><span className="text-[rgba(245,237,216,0.6)]">Wallet</span><br /><span className="font-mono break-all">{r.walletAddress}</span></div>
+                                          <div><span className="text-[rgba(245,237,216,0.6)]">Province</span><br /><span>{r.location?.province || '—'}</span></div>
+                                          <div><span className="text-[rgba(245,237,216,0.6)]">District</span><br /><span>{r.location?.district || '—'}</span></div>
+                                          <div><span className="text-[rgba(245,237,216,0.6)]">Municipality</span><br /><span>{r.location?.municipality || '—'}</span></div>
+                                          <div><span className="text-[rgba(245,237,216,0.6)]">Ward</span><br /><span>{r.location?.ward ?? '—'}</span></div>
+                                          <div><span className="text-[rgba(245,237,216,0.6)]">Tole</span><br /><span>{r.location?.tole || '—'}</span></div>
+                                          <div><span className="text-[rgba(245,237,216,0.6)]">Size</span><br /><span>{formatSize(r.size)}</span></div>
+                                          <div><span className="text-[rgba(245,237,216,0.6)]">Submitted</span><br /><span>{new Date(r.createdAt).toLocaleString()}</span></div>
                                         </div>
                                         {r.paymentTxSignature && !r.paymentTxSignature.startsWith('dev-') && (
                                           <div>
-                                            <span className="text-slate-500">Payment (proof)</span><br />
-                                            <a href={`https://explorer.solana.com/tx/${r.paymentTxSignature}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="font-mono text-blue-600 hover:underline inline-flex items-center gap-1">
+                                            <span className="text-[rgba(245,237,216,0.6)]">Payment (proof)</span><br />
+                                            <a href={`https://explorer.solana.com/tx/${r.paymentTxSignature}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="font-mono text-[#7DD3FC] hover:underline inline-flex items-center gap-1">
                                               {truncateHash(r.paymentTxSignature)} <ExternalLink className="w-3.5 h-3.5" />
                                             </a>
                                           </div>
@@ -879,17 +893,17 @@ function App() {
                                     ) : (
                                       <>
                                         <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-                                          <div><span className="text-slate-500">From (you)</span><br /><span className="font-medium text-slate-800">{r.ownerName}</span></div>
-                                          <div><span className="text-slate-500">Your wallet</span><br /><span className="font-mono text-slate-800 break-all">{r.walletAddress}</span></div>
-                                          <div><span className="text-slate-500">To (recipient)</span><br /><span className="text-slate-800">{r.toName}</span></div>
-                                          <div><span className="text-slate-500">Recipient wallet</span><br /><span className="font-mono text-slate-800 break-all">{r.toWallet}</span></div>
-                                          <div><span className="text-slate-500">Parcel ID</span><br /><span className="font-mono text-slate-800">{r.parcelId || '—'}</span></div>
-                                          <div><span className="text-slate-500">Submitted</span><br /><span className="text-slate-800">{new Date(r.createdAt).toLocaleString()}</span></div>
+                                          <div><span className="text-[rgba(245,237,216,0.6)]">From (you)</span><br /><span className="font-medium">{r.ownerName}</span></div>
+                                          <div><span className="text-[rgba(245,237,216,0.6)]">Your wallet</span><br /><span className="font-mono break-all">{r.walletAddress}</span></div>
+                                          <div><span className="text-[rgba(245,237,216,0.6)]">To (recipient)</span><br /><span>{r.toName}</span></div>
+                                          <div><span className="text-[rgba(245,237,216,0.6)]">Recipient wallet</span><br /><span className="font-mono break-all">{r.toWallet}</span></div>
+                                          <div><span className="text-[rgba(245,237,216,0.6)]">Parcel ID</span><br /><span className="font-mono">{r.parcelId || '—'}</span></div>
+                                          <div><span className="text-[rgba(245,237,216,0.6)]">Submitted</span><br /><span>{new Date(r.createdAt).toLocaleString()}</span></div>
                                         </div>
                                         {r.paymentTxSignature && !r.paymentTxSignature.startsWith('dev-') && (
                                           <div>
-                                            <span className="text-slate-500">Payment (proof)</span><br />
-                                            <a href={`https://explorer.solana.com/tx/${r.paymentTxSignature}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="font-mono text-blue-600 hover:underline inline-flex items-center gap-1">
+                                            <span className="text-[rgba(245,237,216,0.6)]">Payment (proof)</span><br />
+                                            <a href={`https://explorer.solana.com/tx/${r.paymentTxSignature}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="font-mono text-[#7DD3FC] hover:underline inline-flex items-center gap-1">
                                               {truncateHash(r.paymentTxSignature)} <ExternalLink className="w-3.5 h-3.5" />
                                             </a>
                                           </div>
