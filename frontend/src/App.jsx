@@ -49,12 +49,15 @@ const NepalFlag = () => (
   </svg>
 )
 
-const JaggaChainLogo = ({ className = 'h-32 w-auto' }) => (
-  <img
-    src="/logo.png"
-    alt="JaggaChain Logo"
-    className={`${className} object-contain transition-transform duration-300 bg-transparent`}
-  />
+const JaggaChainLogo = ({ className = '' }) => (
+  <div className={`flex flex-col leading-tight ${className}`}>
+    <span className="font-[Yatra_One,system-ui] text-2xl tracking-[0.05em] bg-gradient-to-tr from-[#F5C842] via-[#D4A017] to-[#B5121B] bg-clip-text text-transparent">
+      JaggaChain
+    </span>
+    <span className="font-mono text-[10px] tracking-[0.3em] uppercase bg-gradient-to-r from-[#9945FF] to-[#14F195] bg-clip-text text-transparent -mt-1">
+      Built on Solana
+    </span>
+  </div>
 )
 
 // Nepal 7 provinces (2015 constitution)
