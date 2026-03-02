@@ -562,10 +562,14 @@ function App() {
           }
         }
         if (event.data.type === 'jagga-wallet') {
-          const el = document.querySelector('.wallet-adapter-button')
-          if (el && typeof el.click === 'function') {
-            el.click()
-          }
+          // Move into app shell (where WalletMultiButton is rendered) then open wallet
+          setActiveTab('parcels')
+          setTimeout(() => {
+            const el = document.querySelector('.wallet-adapter-button')
+            if (el && typeof el.click === 'function') {
+              el.click()
+            }
+          }, 150)
         }
       }
       window.addEventListener('message', handler)
