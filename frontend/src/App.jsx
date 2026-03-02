@@ -675,7 +675,7 @@ function App() {
                     <div className="flex items-center gap-3">
                       <span className="hidden sm:block text-right">
                         <p className="text-xs md:text-sm font-mono text-slate-400">{truncateHash(walletAddress)}</p>
-                        <span className={`inline-flex items-center gap-1 text-[11px] md:text-xs font-bold uppercase tracking-wider ${isCLRO ? 'text-accent-crimson' : isLRO ? 'text-amber-600' : 'text-primary'}`}>
+                        <span className={`inline-flex items-center gap-1 text-[11px] md:text-xs font-bold uppercase tracking-wider ${isCLRO ? 'role-pill-clro' : isLRO ? 'role-pill-lro' : 'role-pill-citizen'}`}>
                           {isCLRO ? <><Landmark className="w-4 h-4" /> प्रमुख मालपोत अधिकृत</> : isLRO ? <><Landmark className="w-4 h-4" /> मालपोत अधिकृत</> : <><User className="w-4 h-4" /> नागरिक</>}
                         </span>
                       </span>

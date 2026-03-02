@@ -237,6 +237,17 @@ body {
   background-clip: text;
 }
 
+/* Wallet role pills (Citizen / Officer / Chief Officer) */
+.app-shell .role-pill-citizen {
+  color: #38bdf8 !important; /* blue */
+}
+.app-shell .role-pill-lro {
+  color: #facc15 !important; /* yellow-gold */
+}
+.app-shell .role-pill-clro {
+  color: #f97373 !important; /* soft red */
+}
+
 .font-display {
   font-family: 'Merriweather', serif;
 }
