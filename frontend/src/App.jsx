@@ -49,14 +49,16 @@ const NepalFlag = () => (
   </svg>
 )
 
-const JaggaChainLogo = ({ className = '' }) => (
+const JaggaChainLogo = ({ className = '', showSubtitle = false }) => (
   <div className={`flex flex-col leading-tight ${className}`}>
-    <span className="font-[Yatra_One,system-ui] text-2xl tracking-[0.05em] bg-gradient-to-tr from-[#F5C842] via-[#D4A017] to-[#B5121B] bg-clip-text text-transparent">
+    <span className="jaggachain-wordmark text-2xl tracking-[0.05em]">
       JaggaChain
     </span>
-    <span className="font-mono text-[10px] tracking-[0.3em] uppercase bg-gradient-to-r from-[#9945FF] to-[#14F195] bg-clip-text text-transparent -mt-1">
-      Built on Solana
-    </span>
+    {showSubtitle && (
+      <span className="font-mono text-[10px] tracking-[0.3em] uppercase bg-gradient-to-r from-[#9945FF] to-[#14F195] bg-clip-text text-transparent -mt-1">
+        Built on Solana
+      </span>
+    )}
   </div>
 )
 
@@ -627,7 +629,7 @@ function App() {
                   onClick={() => setActiveTab('landing')}
                   className="flex items-center group cursor-pointer shrink-0"
                 >
-                  <JaggaChainLogo />
+                  <JaggaChainLogo className="text-sm" />
                 </button>
                 <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-4">
                   <button
@@ -1483,9 +1485,9 @@ function App() {
                   />
                 </div>
               </div>
-              <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl">
-                <p className="text-sm text-blue-800 flex items-center gap-2">
-                  <Zap className="w-4 h-4 shrink-0" />
+              <div className="bg-[rgba(153,69,255,0.12)] border border-[rgba(153,69,255,0.35)] p-4 rounded-xl">
+                <p className="text-sm text-[rgba(245,237,216,0.85)] flex items-center gap-2">
+                  <Zap className="w-4 h-4 shrink-0 text-[#F5C842]" />
                   After government approval, an NFT will be minted on Solana and the record will be visible on Explorer. A small fee may apply.
                 </p>
               </div>

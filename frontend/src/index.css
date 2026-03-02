@@ -181,6 +181,16 @@ body {
   color: rgba(245, 237, 216, 0.45);
 }
 
+/* JaggaChain wordmark – match landing footer gradient */
+.jaggachain-wordmark {
+  font-family: 'Yatra One', cursive;
+  background: linear-gradient(135deg, var(--bright-gold, #F5C842), var(--crimson, #B5121B));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent !important;
+}
+
 /* Nepal flag – premium wave */
 @keyframes flagWave {
   0%, 100% { transform: rotate(-3deg) scale(1); }
