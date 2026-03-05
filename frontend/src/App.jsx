@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { Transaction, LAMPORTS_PER_SOL } from '@solana/web3.js'
@@ -82,6 +82,46 @@ const NEPAL_DISTRICTS_BY_PROVINCE = {
   Lumbini: ['Kapilvastu', 'Parasi', 'Rupandehi', 'Arghakhanchi', 'Gulmi', 'Palpa', 'Dang', 'Pyuthan', 'Rolpa', 'Eastern Rukum', 'Banke', 'Bardiya'],
   Karnali: ['Western Rukum', 'Salyan', 'Dolpa', 'Humla', 'Jumla', 'Kalikot', 'Mugu', 'Surkhet', 'Dailekh', 'Jajarkot'],
   Sudurpashchim: ['Kailali', 'Achham', 'Doti', 'Bajhang', 'Bajura', 'Kanchanpur', 'Dadeldhura', 'Baitadi', 'Darchula']
+}
+
+const Landing = ({ onNav, onOpenWallet }) => {
+  useEffect(() => {
+    const handler = (event) => {
+      if (!event || !event.data) return
+      if (event.data.type === 'jagga-nav') {
+        if (event.data.target === 'parcels') {
+          onNav('parcels')
+        } else if (event.data.target === 'explorer') {
+          onNav('explorer')
+        }
+      }
+      if (event.data.type === 'jagga-wallet') {
+        onOpenWallet()
+      }
+    }
+    window.addEventListener('message', handler)
+    return () => window.removeEventListener('message', handler)
+  }, [onNav, onOpenWallet])
+
+  return (
+    <div className="min-h-screen">
+      <iframe
+        src="/landing.html"
+        title="JaggaChain Landing"
+        className="w-full min-h-screen border-0"
+      />
+      {/* Simple bridge into the React app while keeping the exact landing visual */}
+      <div className="fixed bottom-4 right-4 z-50 hidden md:block">
+        <button
+          type="button"
+          onClick={() => onNav('explorer')}
+          className="rounded-full bg-primary text-white text-xs font-semibold px-4 py-2 shadow-lg shadow-black/40 hover:bg-red-700 transition-colors"
+        >
+          Enter App
+        </button>
+      </div>
+    </div>
+  )
 }
 
 function App() {
@@ -315,7 +355,7 @@ function App() {
     return () => { cancelled = true }
   }, [selectedParcelDetail?._id])
 
-  const fetchParcels = async () => {
+  const fetchParcels = useCallback(async () => {
     try {
       const res = await fetch(`${API_BASE}/api/parcels`)
       const data = await res.json()
@@ -323,7 +363,7 @@ function App() {
     } catch (err) {
       console.error('Failed to fetch parcels:', err)
     }
-  }
+  }, [API_BASE])
 
   const fetchParcelsByOwner = async (wallet) => {
     try {
@@ -371,6 +411,26 @@ function App() {
       console.error('Failed to fetch stats:', err)
     }
   }
+
+  const handleLandingNav = useCallback((target) => {
+    if (target === 'parcels') {
+      setActiveTab('parcels')
+    } else if (target === 'explorer') {
+      setActiveTab('explorer')
+      fetchParcels()
+    }
+  }, [fetchParcels, setActiveTab])
+
+  const handleLandingWallet = useCallback(() => {
+    // Move into app shell (where WalletMultiButton is rendered) then open wallet
+    setActiveTab('parcels')
+    setTimeout(() => {
+      const el = document.querySelector('.wallet-adapter-button')
+      if (el && typeof el.click === 'function') {
+        el.click()
+      }
+    }, 150)
+  }, [setActiveTab])
 
   // Chief Land Revenue Officer: approve or reject (0.08 SOL)
   const handleWhitelistAction = async (id, status) => {
@@ -549,54 +609,6 @@ function App() {
     : []
   const myParcels = parcels
 
-  const Landing = () => {
-    useEffect(() => {
-      const handler = (event) => {
-        if (!event || !event.data) return
-        if (event.data.type === 'jagga-nav') {
-          if (event.data.target === 'parcels') {
-            setActiveTab('parcels')
-          } else if (event.data.target === 'explorer') {
-            setActiveTab('explorer')
-            fetchParcels()
-          }
-        }
-        if (event.data.type === 'jagga-wallet') {
-          // Move into app shell (where WalletMultiButton is rendered) then open wallet
-          setActiveTab('parcels')
-          setTimeout(() => {
-            const el = document.querySelector('.wallet-adapter-button')
-            if (el && typeof el.click === 'function') {
-              el.click()
-            }
-          }, 150)
-        }
-      }
-      window.addEventListener('message', handler)
-      return () => window.removeEventListener('message', handler)
-    }, [])
-
-    return (
-      <div className="min-h-screen">
-        <iframe
-          src="/landing.html"
-          title="JaggaChain Landing"
-          className="w-full min-h-screen border-0"
-        />
-        {/* Simple bridge into the React app while keeping the exact landing visual */}
-        <div className="fixed bottom-4 right-4 z-50 hidden md:block">
-          <button
-            type="button"
-            onClick={() => setActiveTab('explorer')}
-            className="rounded-full bg-primary text-white text-xs font-semibold px-4 py-2 shadow-lg shadow-black/40 hover:bg-red-700 transition-colors"
-          >
-            Enter App
-          </button>
-        </div>
-      </div>
-    )
-  }
-
   const requireWallet = (tab) => {
     if (tab === 'explorer') return false
     return true
@@ -629,7 +641,9 @@ function App() {
           </button>
         </div>
       )}
-      {activeTab === 'landing' && <Landing />}
+      {activeTab === 'landing' && (
+        <Landing onNav={handleLandingNav} onOpenWallet={handleLandingWallet} />
+      )}
 
       {/* Single global navbar on all non-landing pages */}
       {activeTab !== 'landing' && (
