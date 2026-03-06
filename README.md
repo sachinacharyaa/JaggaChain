@@ -197,6 +197,22 @@ Open the URL shown (e.g. `http://localhost:5173`). Connect a Solana wallet (e.g.
 
 ---
 
+## Future Vision
+
+Currently, JaggaChain works with three stakeholder/roles:
+Citizen: Citizens can register land in the system.
+Land Officer: Land Officers create land registration proposals.
+Chief Land Officer: The Chief Land Officer approves or rejects the proposals.
+
+In the future, this system can be integrated with official government land management systems through collaboration and discussion with government authorities.
+
+-Integration with official government land registry systems for real-world deployment
+-Legal document storage with IPFS for tamper-proof land ownership documents
+-Instant land transfer verification through blockchain records
+-Fraud prevention by making all ownership records publicly verifiable
+-Mobile app version for easier citizen access and registration
+-Smart contract automation for approvals and land transfer workflows
+
 ## License
 
 JaggaChain License
