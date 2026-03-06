@@ -138,7 +138,7 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env`:
+(optional for demo) Edit `.env`:
 
 - `PORT=5000`
 - `MONGO_URI` – your MongoDB connection string
@@ -163,7 +163,7 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env`:
+(optional for demo) Edit `.env`:
 
 - `VITE_API_URL=http://localhost:5000`
 - Optionally `VITE_WALLET_LRO` and `VITE_WALLET_CLRO` (government wallets)
