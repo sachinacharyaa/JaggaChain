@@ -199,4 +199,21 @@ Open the URL shown (e.g. `http://localhost:5173`). Connect a Solana wallet (e.g.
 
 ## License
 
-MIT.
+JaggaChain License
+Copyright (c) 2026 [Sachin Acharya]
+
+All Rights Reserved.
+
+This software and associated documentation files (the "Software") are the intellectual property of the author.
+
+Permission is NOT granted to copy, modify, merge, publish, distribute, sublicense or sell copies of the Software without explicit written permission from the author.
+
+Unauthorized use, reproduction or distribution of this Software in whole or in part is strictly prohibited.
+
+The Software is provided for viewing and educational purposes only.
+
+For permission requests, collaborations, or licensing inquiries, please contact:
+[thesachinacharya77@gmail.com]
+
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
+
