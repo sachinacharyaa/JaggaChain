@@ -218,5 +218,3 @@ In the future, this system can be integrated with official government land manag
 JaggaChain License
 Copyright (c) 2026 [Sachin Acharya]
 
-All Rights Reserved.
-
