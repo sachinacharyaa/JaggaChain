@@ -220,6 +220,8 @@ Copyright (c) 2026 [Sachin Acharya]
 
 This software and associated documentation files (the "Software") are the intellectual property of the author.
 
+All rights reserved.
+
 Permission is NOT granted to copy, modify, merge, publish, distribute, sublicense or sell copies of the Software without explicit written permission from the author.
 
 Unauthorized use, reproduction or distribution of this Software in whole or in part is strictly prohibited.

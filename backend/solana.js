@@ -109,7 +109,13 @@ async function submitSignedTx(signedTxBase64) {
   if (!connection) throw new Error('Solana RPC not configured')
   const buffer = Buffer.from(signedTxBase64, 'base64')
   const sig = await connection.sendRawTransaction(buffer, { skipPreflight: false })
-  await connection.confirmTransaction(sig)
+
+  // Fire-and-forget confirmation so the API responds quickly.
+  // Wallet UI will close as soon as the transaction is accepted by the RPC node.
+  connection.confirmTransaction(sig, 'confirmed').catch((e) => {
+    console.warn('Solana confirmTransaction (background) failed:', e.message)
+  })
+
   return sig
 }
 
