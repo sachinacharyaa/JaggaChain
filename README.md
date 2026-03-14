@@ -128,51 +128,40 @@ JaggaChain/
 
 ---
 
-## Setup (Quick Start)
+## 🚀 Quick Start
 
-### 1. Backend
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/sachinacharyaa/JaggaChain.git
+cd JaggaChain
+```
+
+### 2. Start Backend
 
 ```bash
 cd backend
 npm install
-cp .env.example .env
-```
-
-(optional for demo) Edit `.env`:
-
-- `PORT=5000`
-- `MONGO_URI` – your MongoDB connection string
-- `SOLANA_RPC_URL` – e.g. `https://api.devnet.solana.org`
-- `SOLANA_MINT_KEYPAIR` – base58 keypair (for memos / mint; must have SOL on devnet)
-- `TREASURY_WALLET` – Solana address that receives fee payments
-- `FEE_CITIZEN_SOL=0.02`, `FEE_LRO_SOL=0.05`, `FEE_CLRO_SOL=0.08`
-
-Then:
-
-```bash
 npm start
 ```
 
-Backend runs at `http://localhost:5000`.
+Backend runs at:
+`http://localhost:5000`
 
-### 2. Frontend
+⚠️ Seeing an error message on the root route is expected.
+
+### 3. Start Frontend
+
+Open a new terminal:
 
 ```bash
 cd frontend
 npm install
-cp .env.example .env
-```
-
-(optional for demo) Edit `.env`:
-
-- `VITE_API_URL=http://localhost:5000`
-- Optionally `VITE_WALLET_LRO` and `VITE_WALLET_CLRO` (government wallets)
-
-Then:
-
-```bash
 npm run dev
 ```
+
+Open the URL shown in the terminal (usually):
+`http://localhost:5173`
 
 Open the URL shown (e.g. `http://localhost:5173`). Connect a Solana wallet (e.g. Phantom) on **devnet** to use Register, Transfer, and Government flows.
 
