@@ -202,22 +202,18 @@ In the future, this system can be integrated with official government land manag
 -Mobile app version for easier citizen access and registration
 -Smart contract automation for approvals and land transfer workflows
 
+---
+
+## Contributing
+
+Contributions are welcome! Please see `CONTRIBUTING.md` for guidelines.
+
+- Fork the repository  
+- Create a feature branch (`git checkout -b feature/amazing-feature`)  
+- Commit your changes (`git commit -m 'Add amazing feature'`)  
+- Push to the branch (`git push origin feature/amazing-feature`)  
+- Open a Pull Request  
+
 ## License
 
-JaggaChain License
-Copyright (c) 2026 [Sachin Acharya]
-
-This software and associated documentation files (the "Software") are the intellectual property of the author.
-
-All rights reserved.
-
-Permission is NOT granted to copy, modify, merge, publish, distribute, sublicense or sell copies of the Software without explicit written permission from the author.
-
-Unauthorized use, reproduction or distribution of this Software in whole or in part is strictly prohibited.
-
-The Software is provided for viewing and educational purposes only.
-
-For permission requests, collaborations or licensing inquiries, please contact:
-[thesachinacharya77@gmail.com]
-
-THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
+Distributed under the MIT License. See `LICENSE` for details.
