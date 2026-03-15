@@ -140,23 +140,3 @@ If you have questions or ideas:
 
 Thank you for helping make JaggaChain better!
 
-# Contributing to JaggaChain
-
-Thank you for considering contributing to JaggaChain!
-
-## How to contribute
-
-1. Fork the repository.
-2. Create a feature branch:
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. Commit your changes:
-   ```bash
-   git commit -m "Add amazing feature"
-   ```
-4. Push to your branch:
-   ```bash
-   git push origin feature/amazing-feature
-   ```
-5. Open a Pull Request against the `main` branch.
